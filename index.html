@@ -814,6 +814,8 @@
         let hls = null;
         let isFullscreen = false;
         let searchQuery = '';
+        
+        // MODIFICA: Le categorie partono chiuse di default
         let expandedCountries = JSON.parse(localStorage.getItem('expandedCountries')) || {};
 
         // Canale predefinito - RetegramNEWS
@@ -1136,6 +1138,7 @@
             videoContainer.addEventListener('touchstart', handleVideoTouchStart);
             videoContainer.addEventListener('touchend', handleVideoTouchEnd);
             
+            // MODIFICA: Migliorata gestione fullscreen
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
@@ -1230,7 +1233,8 @@
             const groupDiv = document.createElement('div');
             groupDiv.className = 'country-group';
             
-            const isExpanded = expandedCountries[country] !== false;
+            // MODIFICA: Le categorie partono chiuse di default
+            const isExpanded = expandedCountries[country] === true; // Solo se esplicitamente true
             const flag = getCountryFlag(country);
             
             groupDiv.innerHTML = `
@@ -1518,7 +1522,7 @@
             videoPlayer.currentTime = percent * videoPlayer.duration;
         }
 
-        // FULLSCREEN
+        // FULLSCREEN - RISOLTO IL BUG
         function toggleFullscreen() {
             if (!isFullscreen) {
                 enterFullscreen();
@@ -1563,6 +1567,7 @@
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
             } else {
+                // Fallback per browser che non supportano exitFullscreen
                 document.body.classList.remove('fullscreen');
                 isFullscreen = false;
                 fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
@@ -1582,7 +1587,9 @@
                 document.body.classList.add('fullscreen');
                 fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
             } else {
+                // MODIFICA: Assicurarsi che venga rimosso lo stato fullscreen
                 document.body.classList.remove('fullscreen');
+                isFullscreen = false;
                 fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
             }
         }
