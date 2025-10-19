@@ -917,34 +917,79 @@
             channels = [defaultChannel, ...customChannels];
         }
 
-        // Carica canali da URL M3U8
-        async function loadChannelsFromURL() {
-            try {
-                const response = await fetch('https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8');
-                const m3u8Content = await response.text();
-                
-                // Parsing M3U8
-                const newChannels = parseM3U8(m3u8Content);
-                
-                if (newChannels.length > 0) {
-                    // Combina tutti i canali: default + personalizzati + da internet
-                    channels = [defaultChannel, ...customChannels, ...newChannels];
-                    
-                    // Raggruppa canali per paese
-                    groupChannelsByCountry();
-                    generateChannelGroups();
-                    showToast(`Caricati ${newChannels.length} canali da ${Object.keys(groupedChannels).length} paesi`);
+// Parsing M3U8 corretto - gestisce tutti i canali
+function parseM3U8(content) {
+    const channels = [];
+    const lines = content.split('\n');
+    let currentChannel = null;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        
+        if (line.startsWith('#EXTINF:')) {
+            // Estrai nome e attributi
+            const info = line.substring(8);
+            const commaIndex = info.indexOf(',');
+            
+            if (commaIndex === -1) continue; // Salta se non c'è la virgola
+            
+            const attributes = info.substring(0, commaIndex);
+            const name = info.substring(commaIndex + 1).trim();
+            
+            // Estrai attributi
+            let logo = null;
+            let country = detectCountry(name);
+            let group = null;
+            
+            // Cerca logo negli attributi
+            const logoMatch = attributes.match(/tvg-logo="([^"]+)"/);
+            if (logoMatch) {
+                logo = logoMatch[1];
+            }
+            
+            // Cerca paese negli attributi
+            const countryMatch = attributes.match(/tvg-country="([^"]+)"/);
+            if (countryMatch) {
+                country = countryMatch[1];
+            }
+            
+            // Cerca gruppo negli attributi
+            const groupMatch = attributes.match(/group-title="([^"]+)"/);
+            if (groupMatch) {
+                group = groupMatch[1];
+                // Usa il gruppo come paese se disponibile
+                if (group && country === 'Altri') {
+                    country = group;
                 }
-                
-            } catch (error) {
-                console.error('Errore caricamento canali:', error);
-                // Usa solo canali predefiniti e personalizzati se il caricamento fallisce
-                updateChannelsList();
-                groupChannelsByCountry();
-                generateChannelGroups();
-                showToast('Lista canali non disponibile - usando canali salvati');
+            }
+            
+            currentChannel = {
+                id: channels.length + 1, // ID sequenziale
+                name: name.replace(/["']/g, ''), // Rimuovi virgolette
+                url: '',
+                icon: getChannelIcon(name),
+                logo: logo,
+                country: country,
+                group: group,
+                type: "internet"
+            };
+            
+            // Cerca l'URL nelle prossime linee (potrebbe non essere immediatamente dopo)
+            for (let j = i + 1; j < lines.length; j++) {
+                const urlLine = lines[j].trim();
+                if (urlLine && !urlLine.startsWith('#') && urlLine.startsWith('http')) {
+                    currentChannel.url = urlLine;
+                    channels.push(currentChannel);
+                    i = j; // Salta alla linea dell'URL
+                    break;
+                }
             }
         }
+    }
+    
+    console.log(`Trovati ${channels.length} canali`);
+    return channels;
+}
 
         // Raggruppa canali per paese
         function groupChannelsByCountry() {
@@ -1036,36 +1081,38 @@
             return channels;
         }
 
-        // Rileva paese dal nome del canale
-        function detectCountry(channelName) {
-            const lowerName = channelName.toLowerCase();
-            
-            const countryPatterns = {
-                'Italia': [/italia/i, /italy/i, /rai/i, /mediaset/i, /la7/i, /sky italia/i],
-                'USA': [/usa/i, /united states/i, /american/i, /cnn/i, /fox/i, /nbc/i, /abc/i, /cbs/i],
-                'UK': [/uk/i, /united kingdom/i, /british/i, /bbc/i, /itv/i, /channel 4/i],
-                'Germania': [/germany/i, /deutsch/i, /ard/i, /zdf/i, /rtl/i],
-                'Francia': [/france/i, /francais/i, /tf1/i, /france 2/i, /m6/i],
-                'Spagna': [/spain/i, /espana/i, /español/i, /tv española/i],
-                'Brasile': [/brazil/i, /brasil/i, /globo/i, /record tv/i],
-                'Arabia': [/arabic/i, /al jazeera/i, /arabiya/i, /dubai/i],
-                'Turchia': [/turkey/i, /türk/i, /trt/i],
-                'Russia': [/russia/i, /russian/i, /rt rus/i],
-                'Giappone': [/japan/i, /nhk/i, /fuji tv/i],
-                'Corea': [/korea/i, /kbs/i, /mbc/i],
-                'Cina': [/china/i, /cctv/i, /hong kong/i],
-                'India': [/india/i, /hindi/i, /star plus/i]
-            };
+// Rileva paese dal nome del canale e gruppo
+function detectCountry(channelName) {
+    const lowerName = channelName.toLowerCase();
+    
+    const countryPatterns = {
+        'Italy': [/italia/i, /italy/i, /rai/i, /mediaset/i, /la7/i, /sky italia/i, /italian/i],
+        'USA': [/usa/i, /united states/i, /american/i, /cnn/i, /fox/i, /nbc/i, /abc/i, /cbs/i],
+        'UK': [/uk/i, /united kingdom/i, /british/i, /bbc/i, /itv/i, /channel 4/i],
+        'Germany': [/germany/i, /deutsch/i, /ard/i, /zdf/i, /rtl/i],
+        'France': [/france/i, /francais/i, /tf1/i, /france 2/i, /m6/i],
+        'Spain': [/spain/i, /espana/i, /español/i, /tv española/i],
+        'Brazil': [/brazil/i, /brasil/i, /globo/i, /record tv/i],
+        'Arabic': [/arabic/i, /al jazeera/i, /arabiya/i, /dubai/i, /abu dhabi/i],
+        'Turkey': [/turkey/i, /türk/i, /trt/i],
+        'Russia': [/russia/i, /russian/i, /rt rus/i],
+        'Japan': [/japan/i, /nhk/i, /fuji tv/i],
+        'Korea': [/korea/i, /kbs/i, /mbc/i],
+        'China': [/china/i, /cctv/i, /hong kong/i],
+        'India': [/india/i, /hindi/i, /star plus/i, /bollywood/i],
+        'Mexico': [/mexico/i, /mexican/i],
+        'Canada': [/canada/i, /canadian/i],
+        'Australia': [/australia/i, /australian/i]
+    };
 
-            for (const [country, patterns] of Object.entries(countryPatterns)) {
-                if (patterns.some(pattern => pattern.test(lowerName))) {
-                    return country;
-                }
-            }
-            
-            return 'Altri';
+    for (const [country, patterns] of Object.entries(countryPatterns)) {
+        if (patterns.some(pattern => pattern.test(lowerName))) {
+            return country;
         }
-
+    }
+    
+    return 'International';
+}
         // Ottieni bandiera per paese
         function getCountryFlag(countryName) {
             const lowerCountry = countryName.toLowerCase();
@@ -1747,3 +1794,4 @@
     </script>
 </body>
 </html>
+
