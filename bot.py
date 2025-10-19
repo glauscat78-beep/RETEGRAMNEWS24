@@ -1,17 +1,17 @@
 import os
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, CallbackContext
+from telegram.ext import Application, CommandHandler, ContextTypes
 
-# Configurazione - Render.com inserirà queste variabili
+# Configurazione
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
-WEBAPP_URL = os.environ.get('WEBAPP_URL')
+WEBAPP_URL = os.environ.get('WEBAPP_URL', 'https://tuousername.github.io/retegramnews24/')
 
-def start(update: Update, context: CallbackContext):
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = InlineKeyboardMarkup([[
         InlineKeyboardButton("📱 APRI RETEGRAMNEWS24", web_app={"url": WEBAPP_URL})
     ]])
     
-    update.message.reply_text(
+    await update.message.reply_text(
         "📺 **RetegramNews24**\n\n"
         "La tua app di streaming news!\n\n"
         "Clicca il pulsante qui sotto:",
@@ -19,11 +19,15 @@ def start(update: Update, context: CallbackContext):
     )
 
 def main():
-    updater = Updater(BOT_TOKEN)
-    updater.dispatcher.add_handler(CommandHandler("start", start))
-    updater.start_polling()
+    # Crea l'applicazione con la nuova sintassi
+    application = Application.builder().token(BOT_TOKEN).build()
+    
+    # Aggiungi handler
+    application.add_handler(CommandHandler("start", start))
+    
+    # Avvia il bot
+    application.run_polling()
     print("✅ Bot RetegramNews24 online!")
-    updater.idle()
 
 if __name__ == '__main__':
     main()
