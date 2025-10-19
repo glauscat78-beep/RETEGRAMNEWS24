@@ -35,6 +35,7 @@
             overflow-x: hidden;
             user-select: none;
             -webkit-user-select: none;
+            padding: 0;
         }
 
         /* Header */
@@ -85,74 +86,11 @@
             color: var(--primary);
         }
 
-        /* Mobile Menu */
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--light);
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .mobile-menu {
-            position: fixed;
-            top: 0;
-            right: -280px;
-            width: 280px;
-            height: 100%;
-            background: var(--dark-light);
-            z-index: 200;
-            transition: right 0.3s ease;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.3);
-            padding: 1rem;
-            overflow-y: auto;
-        }
-
-        .mobile-menu.active {
-            right: 0;
-        }
-
-        .mobile-menu-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .mobile-menu-close {
-            background: none;
-            border: none;
-            color: var(--light);
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-
-        .mobile-menu-item {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .mobile-menu-item:hover {
-            color: var(--primary);
-        }
-
-        .mobile-menu-item i {
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Video Player */
+        /* Video Player - ORA È SUBITO DOPO L'HEADER */
         .video-section {
             position: relative;
             background: #000;
+            width: 100%;
         }
 
         .video-container {
@@ -167,18 +105,10 @@
             height: 220px;
             display: block;
             background: #000;
-            /* Nascondi controlli nativi */
-            &::-webkit-media-controls {
-                display: none !important;
-            }
         }
 
-        /* Nascondi controlli nativi su tutti i browser */
+        /* Nascondi controlli nativi */
         #video-player::-webkit-media-controls {
-            display: none !important;
-        }
-
-        #video-player::-webkit-media-controls-enclosure {
             display: none !important;
         }
 
@@ -357,7 +287,7 @@
             background: var(--primary);
         }
 
-        /* Channel List - COMPATTO */
+        /* Channel List */
         .channel-list {
             display: grid;
             gap: 0.5rem;
@@ -513,36 +443,6 @@
             display: none;
         }
 
-        /* Status Bar */
-        .status-bar {
-            background: var(--dark-light);
-            padding: 0.6rem 0.75rem;
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--gray);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Gesture Controls */
-        .gesture-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 5;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            pointer-events: none;
-        }
-
-        .gesture-zone {
-            width: 30%;
-            height: 100%;
-            pointer-events: auto;
-        }
-
         /* Toast Notifications */
         .toast {
             position: fixed;
@@ -596,20 +496,12 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            .mobile-menu-btn {
-                display: block;
-            }
-            
             .channel-list {
                 grid-template-columns: 1fr;
             }
             
             .control-right .volume-slider {
                 display: none;
-            }
-            
-            .gesture-overlay {
-                display: flex;
             }
         }
 
@@ -630,10 +522,6 @@
         @media (min-width: 1024px) {
             .channel-list {
                 grid-template-columns: 1fr 1fr 1fr 1fr;
-            }
-            
-            .gesture-overlay {
-                display: none;
             }
         }
 
@@ -673,48 +561,10 @@
                     <i class="fas fa-history"></i>
                 </button>
             </div>
-            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                <i class="fas fa-bars"></i>
-            </button>
         </div>
     </div>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobile-menu">
-        <div class="mobile-menu-header">
-            <h3>Menu</h3>
-            <button class="mobile-menu-close" onclick="toggleMobileMenu()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="mobile-menu-item" onclick="switchTab('all'); toggleMobileMenu();">
-            <i class="fas fa-compass"></i>
-            <span>Tutti i canali</span>
-        </div>
-        <div class="mobile-menu-item" onclick="switchTab('favorites'); toggleMobileMenu();">
-            <i class="fas fa-heart"></i>
-            <span>Preferiti</span>
-        </div>
-        <div class="mobile-menu-item" onclick="switchTab('recent'); toggleMobileMenu();">
-            <i class="fas fa-history"></i>
-            <span>Recenti</span>
-        </div>
-        <div class="mobile-menu-item" onclick="showToast('Informazioni app'); toggleMobileMenu();">
-            <i class="fas fa-info-circle"></i>
-            <span>Informazioni</span>
-        </div>
-        <div class="mobile-menu-item" onclick="showToast('Impostazioni'); toggleMobileMenu();">
-            <i class="fas fa-cog"></i>
-            <span>Impostazioni</span>
-        </div>
-    </div>
-
-    <!-- Status Bar -->
-    <div class="status-bar" id="status">
-        Pronto - 31 canali disponibili
-    </div>
-
-    <!-- Video Player -->
+    <!-- Video Player - ORA È SUBITO DOPO L'HEADER -->
     <section class="video-section" id="video-section">
         <div class="video-container" id="video-container">
             <div class="quality-selector" id="quality-selector">
@@ -736,12 +586,6 @@
             >
                 Il tuo browser non supporta il tag video.
             </video>
-            
-            <!-- Gesture Controls -->
-            <div class="gesture-overlay">
-                <div class="gesture-zone" id="gesture-left" ontouchstart="handleGestureStart(event)" ontouchend="handleGestureEnd(event, 'left')"></div>
-                <div class="gesture-zone" id="gesture-right" ontouchstart="handleGestureStart(event)" ontouchend="handleGestureEnd(event, 'right')"></div>
-            </div>
             
             <div class="custom-controls">
                 <div class="progress-container" onclick="seekVideo(event)">
@@ -1040,7 +884,6 @@
         const playerPlaceholder = document.getElementById('player-placeholder');
         const channelList = document.getElementById('channel-list');
         const loading = document.getElementById('loading');
-        const status = document.getElementById('status');
         const loadingText = document.getElementById('loading-text');
         const progressBar = document.getElementById('progress-bar');
         const progressTime = document.getElementById('progress-time');
@@ -1049,7 +892,6 @@
         const volumeBtn = document.getElementById('volume-btn');
         const videoContainer = document.getElementById('video-container');
         const videoSection = document.getElementById('video-section');
-        const mobileMenu = document.getElementById('mobile-menu');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
 
@@ -1062,18 +904,13 @@
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
         let recentChannels = JSON.parse(localStorage.getItem('recentChannels')) || [];
         let hls = null;
-        let touchStartTime = 0;
-        let touchStartX = 0;
-        let touchStartY = 0;
         let isFullscreen = false;
-        let touchTimeout;
 
         // Inizializzazione
         function init() {
             generateChannelList();
             setupEventListeners();
             loadUserPreferences();
-            setupPWA();
             
             // Disabilita controlli nativi
             disableNativeControls();
@@ -1082,8 +919,6 @@
         // Disabilita controlli nativi del video
         function disableNativeControls() {
             videoPlayer.removeAttribute('controls');
-            videoPlayer.setAttribute('controlsList', 'nodownload nofullscreen noremoteplayback');
-            videoPlayer.setAttribute('disablepictureinpicture', 'true');
         }
 
         // Setup event listeners
@@ -1102,14 +937,6 @@
             // Fullscreen events
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-            
-            // Tasti rapidi
-            document.addEventListener('keydown', handleKeyboardShortcuts);
-            
-            // Gestione PWA
-            window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         }
 
         // Carica preferenze utente
@@ -1123,24 +950,7 @@
             }
         }
 
-        // Setup PWA
-        function setupPWA() {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/sw.js').then(() => {
-                    console.log('Service Worker registrato');
-                }).catch(error => {
-                    console.log('Service Worker non registrato:', error);
-                });
-            }
-        }
-
-        // Gestione installazione PWA
-        function handleBeforeInstallPrompt(e) {
-            e.preventDefault();
-            // Puoi salvare l'evento per mostrare il prompt di installazione in un momento più appropriato
-        }
-
-        // Genera lista canali COMPATTA
+        // Genera lista canali
         function generateChannelList() {
             channelList.innerHTML = '';
             
@@ -1211,7 +1021,6 @@
             console.log('Riproduzione canale:', channel.name);
             
             currentChannel = channel;
-            status.textContent = `Connessione a: ${channel.name}`;
             
             // Aggiungi ai recenti
             addToRecent(channel);
@@ -1249,9 +1058,7 @@
                     loading.classList.add('hidden');
                     videoPlayer.play().catch(e => {
                         console.log('Auto-play fallito:', e);
-                        status.textContent = `${channel.name} - Pronto (clicca play)`;
                     });
-                    status.textContent = `In riproduzione: ${channel.name}`;
                     showToast(`Canale: ${channel.name}`);
                 });
 
@@ -1279,7 +1086,6 @@
                 videoPlayer.addEventListener('loadedmetadata', () => {
                     loading.classList.add('hidden');
                     videoPlayer.play();
-                    status.textContent = `In riproduzione: ${channel.name}`;
                     showToast(`Canale: ${channel.name}`);
                 });
             } else {
@@ -1384,10 +1190,6 @@
                 videoSection.requestFullscreen();
             } else if (videoSection.webkitRequestFullscreen) {
                 videoSection.webkitRequestFullscreen();
-            } else if (videoSection.mozRequestFullScreen) {
-                videoSection.mozRequestFullScreen();
-            } else if (videoSection.msRequestFullscreen) {
-                videoSection.msRequestFullscreen();
             }
         }
 
@@ -1396,18 +1198,11 @@
                 document.exitFullscreen();
             } else if (document.webkitExitFullscreen) {
                 document.webkitExitFullscreen();
-            } else if (document.mozCancelFullScreen) {
-                document.mozCancelFullScreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
             }
         }
 
         function handleFullscreenChange() {
-            isFullscreen = !!(document.fullscreenElement || 
-                             document.webkitFullscreenElement || 
-                             document.mozFullScreenElement || 
-                             document.msFullscreenElement);
+            isFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement);
             
             if (isFullscreen) {
                 videoSection.classList.add('fullscreen');
@@ -1496,49 +1291,12 @@
         // Gestione touch per mobile
         function handleVideoTouchStart(e) {
             videoContainer.classList.add('touch-active');
-            touchStartTime = Date.now();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-            
-            // Nascondi i controlli dopo 3 secondi
-            clearTimeout(touchTimeout);
-            touchTimeout = setTimeout(() => {
-                videoContainer.classList.remove('touch-active');
-            }, 3000);
         }
 
         function handleVideoTouchEnd(e) {
-            // Mantieni i controlli visibili per un po'
-            clearTimeout(touchTimeout);
-            touchTimeout = setTimeout(() => {
+            setTimeout(() => {
                 videoContainer.classList.remove('touch-active');
             }, 3000);
-        }
-
-        // Gesture controls
-        function handleGestureStart(e) {
-            touchStartTime = Date.now();
-            touchStartX = e.touches[0].clientX;
-            touchStartY = e.touches[0].clientY;
-        }
-
-        function handleGestureEnd(e, zone) {
-            const touchEndTime = Date.now();
-            const touchDuration = touchEndTime - touchStartTime;
-            
-            // Solo per tocchi brevi (tap)
-            if (touchDuration < 300) {
-                if (zone === 'left') {
-                    skipBackward();
-                } else if (zone === 'right') {
-                    skipForward();
-                }
-            }
-        }
-
-        // Mobile menu
-        function toggleMobileMenu() {
-            mobileMenu.classList.toggle('active');
         }
 
         // Toast notifications
@@ -1563,43 +1321,10 @@
         }
 
         function showError(message) {
-            status.textContent = message;
-            status.style.color = 'var(--secondary)';
-            setTimeout(() => {
-                status.style.color = '';
-            }, 3000);
             showToast(message);
         }
 
-        function handleKeyboardShortcuts(e) {
-            if (e.target.tagName === 'INPUT') return;
-            
-            switch(e.key) {
-                case ' ':
-                    e.preventDefault();
-                    togglePlay();
-                    break;
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    skipBackward();
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    skipForward();
-                    break;
-                case 'f':
-                    e.preventDefault();
-                    toggleFullscreen();
-                    break;
-                case 'm':
-                    e.preventDefault();
-                    toggleMute();
-                    break;
-            }
-        }
-
         function onVideoEnded() {
-            status.textContent = 'Riproduzione completata';
             showToast('Riproduzione completata');
         }
 
