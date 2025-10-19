@@ -23,12 +23,10 @@ def main():
     print("🚀 Avvio bot RetegramNews24...")
     updater = Updater(BOT_TOKEN, use_context=True)
     
-    # Aggiungi handler
     updater.dispatcher.add_handler(CommandHandler("start", start))
     
-    # Avvia il bot
     updater.start_polling()
-    print("✅ Bot RetegramNews24 online e in ascolto!")
+    print("✅ Bot RetegramNews24 online!")
     updater.idle()
 
 if __name__ == '__main__':
