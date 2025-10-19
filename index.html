@@ -205,6 +205,72 @@
             padding: 0.6rem;
         }
 
+        /* Compact Button Group */
+        .button-group {
+            display: flex;
+            gap: 0.3rem;
+            margin: 0.5rem 0;
+            flex-wrap: nowrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .compact-btn {
+            flex: 1;
+            background: var(--dark-light);
+            color: white;
+            border: none;
+            padding: 0.5rem 0.4rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            transition: all 0.3s ease;
+            min-height: 36px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .compact-btn.export {
+            background: var(--success);
+        }
+
+        .compact-btn.import {
+            background: var(--primary);
+        }
+
+        .compact-btn.custom {
+            background: var(--secondary);
+        }
+
+        .compact-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .compact-btn:active {
+            transform: translateY(0);
+        }
+
+        .compact-btn i {
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .compact-btn span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-input {
+            display: none;
+        }
+
         /* Search Bar */
         .search-container {
             margin-bottom: 0.8rem;
@@ -493,45 +559,6 @@
             display: none;
         }
 
-        /* Export/Import Buttons */
-        .button-group {
-            display: flex;
-            gap: 0.5rem;
-            margin: 0.5rem 0;
-            flex-wrap: wrap;
-        }
-
-        .export-btn, .import-btn, .custom-url-btn {
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .import-btn {
-            background: var(--primary);
-        }
-
-        .custom-url-btn {
-            background: var(--secondary);
-        }
-
-        .export-btn:hover, .import-btn:hover, .custom-url-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .file-input {
-            display: none;
-        }
-
         /* Custom URL Input */
         .custom-url-container {
             background: var(--dark-light);
@@ -618,6 +645,33 @@
             .url-input, .channel-name-input {
                 flex: 1;
             }
+
+            .compact-btn {
+                padding: 0.5rem 0.6rem;
+                font-size: 0.75rem;
+                gap: 0.4rem;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .compact-btn span {
+                display: none;
+            }
+            
+            .compact-btn {
+                padding: 0.5rem;
+                justify-content: center;
+            }
+            
+            .compact-btn i {
+                margin: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .compact-btn span {
+                font-size: 0.65rem;
+            }
         }
     </style>
 </head>
@@ -688,18 +742,19 @@
 
     <!-- Content -->
     <section class="content">
+        <!-- Compact Button Group -->
         <div class="button-group">
-            <button class="export-btn" onclick="exportFavorites()">
+            <button class="compact-btn export" onclick="exportFavorites()">
                 <i class="fas fa-download"></i>
-                Esporta Preferiti
+                <span>Esporta</span>
             </button>
-            <button class="import-btn" onclick="document.getElementById('import-file').click()">
+            <button class="compact-btn import" onclick="document.getElementById('import-file').click()">
                 <i class="fas fa-upload"></i>
-                Importa Preferiti
+                <span>Importa</span>
             </button>
-            <button class="custom-url-btn" onclick="toggleCustomUrl()">
+            <button class="compact-btn custom" onclick="toggleCustomUrl()">
                 <i class="fas fa-plus"></i>
-                Nuovo Canale
+                <span>Nuovo</span>
             </button>
             <input type="file" id="import-file" class="file-input" accept=".txt" onchange="importFavorites(event)">
         </div>
@@ -1131,7 +1186,7 @@
                         <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                         <div>Nessun canale trovato</div>
                         ${searchQuery ? `<div style="margin-top: 0.5rem; font-size: 0.7rem;">Prova a modificare la ricerca</div>` : ''}
-                        ${currentTab === 'custom' ? `<div style="margin-top: 0.5rem; font-size: 0.7rem;">Usa "Nuovo Canale" per aggiungere stream personalizzati</div>` : ''}
+                        ${currentTab === 'custom' ? `<div style="margin-top: 0.5rem; font-size: 0.7rem;">Usa "Nuovo" per aggiungere stream personalizzati</div>` : ''}
                     </div>
                 `;
             }
