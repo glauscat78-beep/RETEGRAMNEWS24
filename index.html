@@ -38,7 +38,6 @@
             padding: 0;
         }
 
-        /* Header - COMPATTO */
         .header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             padding: 0.5rem 0.75rem;
@@ -93,7 +92,6 @@
             color: var(--primary);
         }
 
-        /* Video Player */
         .video-section {
             position: sticky;
             top: 50px;
@@ -131,7 +129,6 @@
             color: var(--gray);
         }
 
-        /* Custom Controls */
         .custom-controls {
             position: absolute;
             bottom: 0;
@@ -200,12 +197,10 @@
             color: var(--secondary);
         }
 
-        /* Content Area */
         .content {
             padding: 0.6rem;
         }
 
-        /* Compact Button Group */
         .button-group {
             display: flex;
             gap: 0.3rem;
@@ -271,7 +266,6 @@
             display: none;
         }
 
-        /* Search Bar */
         .search-container {
             margin-bottom: 0.8rem;
             position: relative;
@@ -302,7 +296,6 @@
             font-size: 0.8rem;
         }
 
-        /* Country Groups */
         .country-group {
             margin-bottom: 1rem;
         }
@@ -453,7 +446,6 @@
             color: var(--secondary);
         }
 
-        /* Loading */
         .loading {
             position: fixed;
             top: 0;
@@ -487,7 +479,6 @@
             display: none;
         }
 
-        /* Toast Notifications */
         .toast {
             position: fixed;
             bottom: 15px;
@@ -510,7 +501,6 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        /* Fullscreen styles - CORRETTI */
         body.fullscreen {
             overflow: hidden;
             background: #000;
@@ -559,7 +549,6 @@
             display: none;
         }
 
-        /* Custom URL Input */
         .custom-url-container {
             background: var(--dark-light);
             padding: 0.8rem;
@@ -676,7 +665,6 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
     <div class="header">
         <div class="header-content">
             <div class="logo">
@@ -700,7 +688,6 @@
         </div>
     </div>
 
-    <!-- Video Player -->
     <section class="video-section" id="video-section">
         <div class="video-container" id="video-container">
             <div id="player-placeholder" class="player-placeholder">
@@ -740,9 +727,7 @@
         </div>
     </section>
 
-    <!-- Content -->
     <section class="content">
-        <!-- Compact Button Group -->
         <div class="button-group">
             <button class="compact-btn export" onclick="exportFavorites()">
                 <i class="fas fa-download"></i>
@@ -759,7 +744,6 @@
             <input type="file" id="import-file" class="file-input" accept=".txt" onchange="importFavorites(event)">
         </div>
 
-        <!-- Custom URL Input -->
         <div class="custom-url-container" id="custom-url-container">
             <div class="url-input-group">
                 <input type="text" id="channel-name-input" class="channel-name-input" placeholder="Nome del canale (es: Film Azione)" value="">
@@ -778,7 +762,6 @@
             </div>
         </div>
 
-        <!-- Search Bar -->
         <div class="search-container">
             <input type="text" id="search-input" class="search-input" placeholder="Cerca canali...">
             <div class="search-icon">
@@ -786,25 +769,19 @@
             </div>
         </div>
 
-        <!-- Channel Groups -->
-        <div id="channel-groups">
-            <!-- Gruppi di canali per paese -->
-        </div>
+        <div id="channel-groups"></div>
     </section>
 
-    <!-- Loading -->
     <div id="loading" class="loading hidden">
         <div class="loading-spinner"></div>
         <div id="loading-text" style="font-size: 0.8rem;">Caricamento stream...</div>
     </div>
 
-    <!-- Toast Notification -->
     <div class="toast" id="toast">
         <i class="fas fa-info-circle"></i>
         <span id="toast-message">Messaggio</span>
     </div>
 
-    <!-- HLS.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     
     <script>
@@ -851,30 +828,22 @@
 
         // Mappa paesi e bandiere
         const countryFlags = {
-            'italy': '🇮🇹',
-            'italia': '🇮🇹',
-            'usa': '🇺🇸',
-            'united states': '🇺🇸',
-            'uk': '🇬🇧',
-            'united kingdom': '🇬🇧',
-            'germany': '🇩🇪',
-            'deutschland': '🇩🇪',
+            'italy': '🇮🇹', 'italia': '🇮🇹',
+            'usa': '🇺🇸', 'united states': '🇺🇸',
+            'uk': '🇬🇧', 'united kingdom': '🇬🇧',
+            'germany': '🇩🇪', 'deutschland': '🇩🇪',
             'france': '🇫🇷',
-            'spain': '🇪🇸',
-            'espana': '🇪🇸',
+            'spain': '🇪🇸', 'espana': '🇪🇸',
             'portugal': '🇵🇹',
-            'brazil': '🇧🇷',
-            'brasil': '🇧🇷',
+            'brazil': '🇧🇷', 'brasil': '🇧🇷',
             'canada': '🇨🇦',
             'australia': '🇦🇺',
             'japan': '🇯🇵',
             'china': '🇨🇳',
             'russia': '🇷🇺',
             'india': '🇮🇳',
-            'turkey': '🇹🇷',
-            'türkiye': '🇹🇷',
-            'arab': '🇸🇦',
-            'uae': '🇦🇪',
+            'turkey': '🇹🇷', 'türkiye': '🇹🇷',
+            'arab': '🇸🇦', 'uae': '🇦🇪',
             'mexico': '🇲🇽',
             'argentina': '🇦🇷',
             'custom': '⭐',
@@ -886,28 +855,24 @@
             setupEventListeners();
             loadUserPreferences();
             
-            // Carica canali personalizzati
             loadCustomChannels();
             
-            // Avvia subito RetegramNEWS
             setTimeout(() => {
                 playChannel(defaultChannel);
             }, 500);
             
-            // Carica canali dall'URL M3U8 in background
             loadChannelsFromURL();
             
-            // Disabilita controlli nativi
             disableNativeControls();
         }
 
-        // Carica canali personalizzati dal localStorage
+        // Carica canali personalizzati
         function loadCustomChannels() {
             customChannels = JSON.parse(localStorage.getItem('customChannels')) || [];
             updateChannelsList();
         }
 
-        // Salva canali personalizzati nel localStorage
+        // Salva canali personalizzati
         function saveCustomChannels() {
             localStorage.setItem('customChannels', JSON.stringify(customChannels));
         }
@@ -917,20 +882,17 @@
             channels = [defaultChannel, ...customChannels];
         }
 
-        // Carica canali da URL M3U8
+        // Carica canali da URL M3U8 - VERSIONE CORRETTA
         async function loadChannelsFromURL() {
             try {
                 const response = await fetch('https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8');
                 const m3u8Content = await response.text();
                 
-                // Parsing M3U8
                 const newChannels = parseM3U8(m3u8Content);
                 
                 if (newChannels.length > 0) {
-                    // Combina tutti i canali: default + personalizzati + da internet
                     channels = [defaultChannel, ...customChannels, ...newChannels];
                     
-                    // Raggruppa canali per paese
                     groupChannelsByCountry();
                     generateChannelGroups();
                     showToast(`Caricati ${newChannels.length} canali da ${Object.keys(groupedChannels).length} paesi`);
@@ -938,7 +900,6 @@
                 
             } catch (error) {
                 console.error('Errore caricamento canali:', error);
-                // Usa solo canali predefiniti e personalizzati se il caricamento fallisce
                 updateChannelsList();
                 groupChannelsByCountry();
                 generateChannelGroups();
@@ -946,40 +907,7 @@
             }
         }
 
-        // Raggruppa canali per paese
-        function groupChannelsByCountry() {
-            groupedChannels = {};
-            
-            channels.forEach(channel => {
-                let country = channel.country || 'Altri';
-                
-                // Per canali personalizzati, usa gruppo speciale
-                if (channel.type === 'custom') {
-                    country = 'Personalizzati';
-                }
-                
-                if (!groupedChannels[country]) {
-                    groupedChannels[country] = [];
-                }
-                groupedChannels[country].push(channel);
-            });
-            
-            // Ordina paesi: Personalizzati prima, poi altri in ordine decrescente
-            const sortedCountries = Object.keys(groupedChannels).sort((a, b) => {
-                if (a === 'Personalizzati') return -1;
-                if (b === 'Personalizzati') return 1;
-                return groupedChannels[b].length - groupedChannels[a].length;
-            });
-            
-            const sortedGroups = {};
-            sortedCountries.forEach(country => {
-                sortedGroups[country] = groupedChannels[country];
-            });
-            
-            groupedChannels = sortedGroups;
-        }
-
-        // Parsing M3U8 migliorato con rilevamento paese
+        // PARSING M3U8 CORRETTO - Gestisce tutti i canali
         function parseM3U8(content) {
             const channels = [];
             const lines = content.split('\n');
@@ -989,15 +917,19 @@
                 const line = lines[i].trim();
                 
                 if (line.startsWith('#EXTINF:')) {
-                    // Estrai nome e URL
+                    // Estrai nome e attributi
                     const info = line.substring(8);
                     const commaIndex = info.indexOf(',');
+                    
+                    if (commaIndex === -1) continue;
+                    
+                    const attributes = info.substring(0, commaIndex);
                     const name = info.substring(commaIndex + 1).trim();
                     
-                    // Estrai attributi (come tvg-logo e country)
-                    const attributes = info.substring(0, commaIndex);
+                    // Estrai attributi
                     let logo = null;
                     let country = detectCountry(name);
+                    let group = null;
                     
                     // Cerca logo negli attributi
                     const logoMatch = attributes.match(/tvg-logo="([^"]+)"/);
@@ -1011,50 +943,65 @@
                         country = countryMatch[1];
                     }
                     
+                    // Cerca gruppo negli attributi
+                    const groupMatch = attributes.match(/group-title="([^"]+)"/);
+                    if (groupMatch) {
+                        group = groupMatch[1];
+                        if (group && country === 'International') {
+                            country = group;
+                        }
+                    }
+                    
                     currentChannel = {
-                        id: Date.now() + i, // ID unico
-                        name: name,
+                        id: channels.length + 1,
+                        name: name.replace(/["']/g, ''),
                         url: '',
                         icon: getChannelIcon(name),
                         logo: logo,
                         country: country,
+                        group: group,
                         type: "internet"
                     };
                     
-                    // Prossima linea dovrebbe essere l'URL
-                    if (i + 1 < lines.length) {
-                        const urlLine = lines[i + 1].trim();
-                        if (urlLine && !urlLine.startsWith('#')) {
+                    // Cerca l'URL nelle prossime linee
+                    for (let j = i + 1; j < lines.length; j++) {
+                        const urlLine = lines[j].trim();
+                        if (urlLine && !urlLine.startsWith('#') && urlLine.startsWith('http')) {
                             currentChannel.url = urlLine;
                             channels.push(currentChannel);
-                            i++; // Salta la linea dell'URL
+                            i = j;
+                            break;
                         }
                     }
                 }
             }
             
+            console.log(`Trovati ${channels.length} canali`);
             return channels;
         }
 
-        // Rileva paese dal nome del canale
+        // Rileva paese dal nome del canale e gruppo
         function detectCountry(channelName) {
             const lowerName = channelName.toLowerCase();
             
             const countryPatterns = {
-                'Italia': [/italia/i, /italy/i, /rai/i, /mediaset/i, /la7/i, /sky italia/i],
+                'Italy': [/italia/i, /italy/i, /rai/i, /mediaset/i, /la7/i, /sky italia/i, /italian/i],
                 'USA': [/usa/i, /united states/i, /american/i, /cnn/i, /fox/i, /nbc/i, /abc/i, /cbs/i],
                 'UK': [/uk/i, /united kingdom/i, /british/i, /bbc/i, /itv/i, /channel 4/i],
-                'Germania': [/germany/i, /deutsch/i, /ard/i, /zdf/i, /rtl/i],
-                'Francia': [/france/i, /francais/i, /tf1/i, /france 2/i, /m6/i],
-                'Spagna': [/spain/i, /espana/i, /español/i, /tv española/i],
-                'Brasile': [/brazil/i, /brasil/i, /globo/i, /record tv/i],
-                'Arabia': [/arabic/i, /al jazeera/i, /arabiya/i, /dubai/i],
-                'Turchia': [/turkey/i, /türk/i, /trt/i],
+                'Germany': [/germany/i, /deutsch/i, /ard/i, /zdf/i, /rtl/i],
+                'France': [/france/i, /francais/i, /tf1/i, /france 2/i, /m6/i],
+                'Spain': [/spain/i, /espana/i, /español/i, /tv española/i],
+                'Brazil': [/brazil/i, /brasil/i, /globo/i, /record tv/i],
+                'Arabic': [/arabic/i, /al jazeera/i, /arabiya/i, /dubai/i, /abu dhabi/i],
+                'Turkey': [/turkey/i, /türk/i, /trt/i],
                 'Russia': [/russia/i, /russian/i, /rt rus/i],
-                'Giappone': [/japan/i, /nhk/i, /fuji tv/i],
-                'Corea': [/korea/i, /kbs/i, /mbc/i],
-                'Cina': [/china/i, /cctv/i, /hong kong/i],
-                'India': [/india/i, /hindi/i, /star plus/i]
+                'Japan': [/japan/i, /nhk/i, /fuji tv/i],
+                'Korea': [/korea/i, /kbs/i, /mbc/i],
+                'China': [/china/i, /cctv/i, /hong kong/i],
+                'India': [/india/i, /hindi/i, /star plus/i, /bollywood/i],
+                'Mexico': [/mexico/i, /mexican/i],
+                'Canada': [/canada/i, /canadian/i],
+                'Australia': [/australia/i, /australian/i]
             };
 
             for (const [country, patterns] of Object.entries(countryPatterns)) {
@@ -1063,7 +1010,7 @@
                 }
             }
             
-            return 'Altri';
+            return 'International';
         }
 
         // Ottieni bandiera per paese
@@ -1110,10 +1057,8 @@
             videoPlayer.addEventListener('ended', onVideoEnded);
             videoPlayer.addEventListener('loadedmetadata', onVideoLoaded);
             
-            // Search input
             searchInput.addEventListener('input', handleSearch);
             
-            // Custom URL input - Enter key
             customUrlInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     playCustomUrl();
@@ -1126,17 +1071,14 @@
                 }
             });
             
-            // Touch events
             videoContainer.addEventListener('touchstart', handleVideoTouchStart);
             videoContainer.addEventListener('touchend', handleVideoTouchEnd);
             
-            // Fullscreen events
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
             document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-            // Tasti
             document.addEventListener('keydown', handleKeyPress);
         }
 
@@ -1155,7 +1097,6 @@
             Object.keys(groupedChannels).forEach(country => {
                 let countryChannels = groupedChannels[country];
                 
-                // Filtra per tab corrente
                 if (currentTab === 'favorites') {
                     countryChannels = countryChannels.filter(channel => favorites.includes(channel.id));
                 } else if (currentTab === 'recent') {
@@ -1165,7 +1106,6 @@
                     countryChannels = countryChannels.filter(channel => channel.type === 'custom');
                 }
                 
-                // Filtra per ricerca
                 if (searchQuery) {
                     countryChannels = countryChannels.filter(channel => 
                         channel.name.toLowerCase().includes(searchQuery) ||
@@ -1190,6 +1130,37 @@
                     </div>
                 `;
             }
+        }
+
+        // Raggruppa canali per paese
+        function groupChannelsByCountry() {
+            groupedChannels = {};
+            
+            channels.forEach(channel => {
+                let country = channel.country || 'International';
+                
+                if (channel.type === 'custom') {
+                    country = 'Personalizzati';
+                }
+                
+                if (!groupedChannels[country]) {
+                    groupedChannels[country] = [];
+                }
+                groupedChannels[country].push(channel);
+            });
+            
+            const sortedCountries = Object.keys(groupedChannels).sort((a, b) => {
+                if (a === 'Personalizzati') return -1;
+                if (b === 'Personalizzati') return 1;
+                return groupedChannels[b].length - groupedChannels[a].length;
+            });
+            
+            const sortedGroups = {};
+            sortedCountries.forEach(country => {
+                sortedGroups[country] = groupedChannels[country];
+            });
+            
+            groupedChannels = sortedGroups;
         }
 
         // Crea gruppo paese
@@ -1289,7 +1260,6 @@
             customUrlContainer.classList.toggle('show');
             if (customUrlContainer.classList.contains('show')) {
                 channelNameInput.focus();
-                // Reset valori
                 channelNameInput.value = '';
                 customUrlInput.value = '';
             }
@@ -1306,7 +1276,7 @@
             }
 
             const customChannel = {
-                id: -1, // ID temporaneo
+                id: -1,
                 name: name,
                 url: url,
                 icon: "fas fa-link",
@@ -1333,7 +1303,6 @@
                 return;
             }
 
-            // Verifica se il canale esiste già
             const existingChannel = customChannels.find(channel => 
                 channel.url === url || channel.name.toLowerCase() === name.toLowerCase()
             );
@@ -1344,7 +1313,7 @@
             }
 
             const customChannel = {
-                id: Date.now(), // ID unico basato sul timestamp
+                id: Date.now(),
                 name: name,
                 url: url,
                 icon: getChannelIcon(name),
@@ -1352,23 +1321,19 @@
                 type: "custom"
             };
 
-            // Aggiungi ai canali personalizzati
             customChannels.push(customChannel);
             saveCustomChannels();
             
-            // Aggiorna lista completa
             updateChannelsList();
             groupChannelsByCountry();
             generateChannelGroups();
             
-            // Reset e chiudi form
             customUrlInput.value = '';
             channelNameInput.value = '';
             customUrlContainer.classList.remove('show');
             
             showToast(`Canale "${name}" salvato!`);
             
-            // Passa alla tab Personalizzati
             switchTab('custom');
         }
 
@@ -1378,30 +1343,24 @@
             
             currentChannel = channel;
             
-            // Aggiungi ai recenti (tranne per canali temporanei)
             if (channel.type !== 'temporary') {
                 addToRecent(channel);
             }
             
-            // Aggiorna UI
             generateChannelGroups();
             
-            // Riproduci stream
             loadingText.textContent = "Connessione allo stream...";
             loading.classList.remove('hidden');
             playerPlaceholder.classList.add('hidden');
             videoPlayer.classList.remove('hidden');
 
-            // Ferma HLS precedente
             if (hls) {
                 hls.destroy();
             }
 
-            // Reset player
             videoPlayer.pause();
             videoPlayer.src = '';
 
-            // Usa HLS.js per stream m3u8
             if (channel.url.includes('.m3u8') && Hls.isSupported()) {
                 hls = new Hls({
                     enableWorker: true,
@@ -1429,7 +1388,6 @@
                     }
                 });
             } else {
-                // Per altri formati (mp4, ecc.)
                 videoPlayer.src = channel.url;
                 videoPlayer.addEventListener('loadedmetadata', () => {
                     loading.classList.add('hidden');
@@ -1441,13 +1399,11 @@
                 });
             }
 
-            // Gestione errori generici
             videoPlayer.addEventListener('error', () => {
                 loading.classList.add('hidden');
                 showError(`Errore caricamento: ${channel.name}`);
             });
 
-            // Timeout
             setTimeout(() => {
                 if (!loading.classList.contains('hidden')) {
                     loading.classList.add('hidden');
@@ -1464,7 +1420,6 @@
             generateChannelGroups();
         }
 
-        // [RESTANTE CODICE - funzioni di controllo video, fullscreen, preferiti, ecc. rimangono identiche]
         // Controlli video
         function togglePlay() {
             if (videoPlayer.paused) {
@@ -1501,7 +1456,7 @@
             videoPlayer.currentTime = percent * videoPlayer.duration;
         }
 
-        // FULLSCREEN CORRETTO
+        // FULLSCREEN
         function toggleFullscreen() {
             if (!isFullscreen) {
                 enterFullscreen();
@@ -1585,7 +1540,7 @@
             generateChannelGroups();
         }
 
-        // Esporta preferiti come TXT
+        // Esporta preferiti
         function exportFavorites() {
             if (favorites.length === 0) {
                 showToast('Nessun canale preferito');
@@ -1612,7 +1567,7 @@
             showToast('Preferiti esportati!');
         }
 
-        // Importa preferiti da file TXT
+        // Importa preferiti
         function importFavorites(event) {
             const file = event.target.files[0];
             if (!file) return;
@@ -1624,7 +1579,6 @@
                     const importedFavorites = parseImportedFavorites(content);
                     
                     if (importedFavorites.length > 0) {
-                        // Aggiungi i nuovi preferiti a quelli esistenti
                         importedFavorites.forEach(channelName => {
                             const channel = channels.find(ch => 
                                 ch.name.toLowerCase().includes(channelName.toLowerCase()) ||
@@ -1636,7 +1590,6 @@
                             }
                         });
                         
-                        // Salva e aggiorna
                         localStorage.setItem('favorites', JSON.stringify(favorites));
                         generateChannelGroups();
                         showToast(`Importati ${importedFavorites.length} preferiti`);
@@ -1650,7 +1603,7 @@
             };
             
             reader.readAsText(file);
-            event.target.value = ''; // Reset input
+            event.target.value = '';
         }
 
         // Parsing file importato
@@ -1660,9 +1613,8 @@
             
             for (let line of lines) {
                 line = line.trim();
-                // Salta linee vuote e URL
                 if (line && !line.startsWith('http') && !line.includes('CANALI PREFERITI') && !line.match(/\(.*\)$/)) {
-                    channelNames.push(line.replace(/\s*\(.*\)$/, '')); // Rimuovi paese tra parentesi
+                    channelNames.push(line.replace(/\s*\(.*\)$/, ''));
                 }
             }
             
