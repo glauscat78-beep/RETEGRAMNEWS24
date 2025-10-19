@@ -18,46 +18,31 @@
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 15px 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
         .header h1 {
             font-size: 1.3em;
             margin: 0;
         }
-        .back-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
 
         /* VIDEO PLAYER */
         .video-container {
-            margin-top: 60px;
             background: #000;
+            margin: 0;
         }
         #video-player {
             width: 100%;
             height: 250px;
             background: #000;
+            display: block;
         }
 
-        /* CHANNEL LIST */
+        /* CHANNEL LIST - SEMPRE VISIBILE */
         .channel-list {
-            padding: 70px 15px 20px 15px;
+            padding: 20px 15px;
             background: #111;
-            min-height: 100vh;
         }
         .channel-btn {
             background: #333;
@@ -73,7 +58,10 @@
         }
         .channel-btn:hover {
             background: #444;
-            transform: translateY(-2px);
+        }
+        .channel-btn.playing {
+            background: #667eea;
+            border: 2px solid #fff;
         }
         .channel-name {
             font-size: 1.1em;
@@ -85,26 +73,10 @@
             margin-top: 5px;
         }
 
-        /* LOADING */
-        .loading {
-            text-align: center;
-            padding: 100px 20px;
-            background: #000;
-            min-height: 100vh;
-        }
-        .hidden {
-            display: none;
-        }
-
         /* SEARCH */
         .search-container {
             padding: 10px 15px;
             background: #222;
-            position: fixed;
-            top: 60px;
-            left: 0;
-            right: 0;
-            z-index: 999;
         }
         #search-input {
             width: 100%;
@@ -115,9 +87,6 @@
             color: white;
             font-size: 1em;
         }
-        #search-input::placeholder {
-            color: #888;
-        }
 
         /* CATEGORIES */
         .categories {
@@ -125,11 +94,6 @@
             gap: 10px;
             padding: 15px;
             background: #222;
-            position: fixed;
-            top: 110px;
-            left: 0;
-            right: 0;
-            z-index: 998;
             overflow-x: auto;
         }
         .category-btn {
@@ -145,14 +109,57 @@
         .category-btn.active {
             background: #667eea;
         }
+
+        /* LOADING */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .hidden {
+            display: none;
+        }
+
+        /* MESSAGE */
+        .message {
+            background: #333;
+            padding: 15px;
+            margin: 10px 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <!-- HEADER -->
     <div class="header">
-        <button class="back-btn" onclick="showChannelList()">← Canali</button>
         <h1>📺 RetegramNews24</h1>
-        <div style="width: 70px;"></div>
+    </div>
+
+    <!-- VIDEO PLAYER SEMPRE VISIBILE -->
+    <div class="video-container">
+        <video 
+            id="video-player" 
+            controls 
+            autoplay 
+            playsinline
+            poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgdmlld0JveD0iMCAwIDQwMCAyNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjUwIiBmaWxsPSIjMTExIi8+CjxjaXJjbGUgY3g9IjIwMCIgY3k9IjEyNSIgcj0iMzAiIGZpbGw9IiM2NjciLz4KPHBhdGggZD0iTTE3MCAxMDBMMTcwIDE1MEwyMTAgMTI1WiIgZmlsbD0id2hpdGUiLz4KPHRleHQgeD0iMjAwIiB5PSIyMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiM4ODgiIGZvbnQtc2l6ZT0iMTQiIGZvbnQtZmFtaWx5PSJBcmlhbCI+U2VsZXppb25hIHVuIGNhbmFsZTwvdGV4dD4KPC9zdmc+"
+        >
+            Il tuo browser non supporta il tag video.
+        </video>
+    </div>
+
+    <!-- MESSAGGIO INFORMATIVO -->
+    <div class="message">
+        🎥 Seleziona un canale qui sotto. Alcuni stream potrebbero non funzionare.
     </div>
 
     <!-- SEARCH -->
@@ -166,84 +173,70 @@
         <button class="category-btn" onclick="filterByCategory('news')">News</button>
         <button class="category-btn" onclick="filterByCategory('sports')">Sport</button>
         <button class="category-btn" onclick="filterByCategory('music')">Musica</button>
-        <button class="category-btn" onclick="filterByCategory('entertainment')">Intrattenimento</button>
+        <button class="category-btn" onclick="filterByCategory('entertainment')">TV</button>
         <button class="category-btn" onclick="filterByCategory('weather')">Meteo</button>
-    </div>
-
-    <!-- VIDEO PLAYER -->
-    <div id="video-container" class="video-container hidden">
-        <video 
-            id="video-player" 
-            controls 
-            autoplay 
-            playsinline
-            poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgdmlld0JveD0iMCAwIDQwMCAyNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjUwIiBmaWxsPSIjMTExMTExIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2Ij7imYLigqwgU3RyZWFtaW5nIExpdmUg4pmC4oKsPC90ZXh0Pgo8L3N2Zz4K"
-        >
-            Il tuo browser non supporta il tag video.
-        </video>
     </div>
 
     <!-- LOADING -->
     <div id="loading" class="loading hidden">
-        <p>📡 Caricamento stream...</p>
-        <p style="margin-top: 10px; opacity: 0.7; font-size: 0.9em;">Attendi qualche secondo</p>
+        <div style="text-align: center;">
+            <div style="font-size: 3em; margin-bottom: 20px;">📡</div>
+            <p style="font-size: 1.2em; margin-bottom: 10px;">Caricamento in corso...</p>
+            <p style="opacity: 0.7;">Attendi qualche secondo</p>
+        </div>
     </div>
 
-    <!-- CHANNEL LIST -->
+    <!-- CHANNEL LIST - SEMPRE VISIBILE -->
     <div id="channel-list" class="channel-list">
-        <!-- I canali verranno generati automaticamente -->
+        <!-- Canali generati automaticamente -->
     </div>
 
     <script>
         // Inizializza Telegram Web App
         if (typeof Telegram !== 'undefined') {
             Telegram.WebApp.expand();
-            Telegram.WebApp.enableClosingConfirmation();
         }
 
-        // TUTTI I CANALI DAL TUO ELENCO
+        // CANALI TESTATI E FUNZIONANTI
         const channels = [
-            { name: "Red Bull TV", url: "https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8", category: "sports" },
-            { name: "DW News", url: "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8", category: "news" },
-            { name: "Fox News", url: "https://fox-foxnewsnow-vizio.amagi.tv/playlist.m3u8", category: "news" },
-            { name: "CNN International", url: "https://turnerlive.warnermediacdn.com/hls/live/586495/cnngo/cnn_slate/VIDEO_4_1064000.m3u8", category: "news" },
-            { name: "Al Jazeera", url: "https://live-hls-web-aje.getaj.net/AJE/index.m3u8", category: "news" },
-            { name: "Sky News Australia", url: "https://skynewsau-live.akamaized.net/hls/live/2002689/skynewsau-extra1/master.m3u8", category: "news" },
-            { name: "Bloomberg", url: "https://www.bloomberg.com/media-manifest/streams/us.m3u8", category: "news" },
-            { name: "Fox Weather", url: "https://247wlive.foxweather.com/stream/index.m3u8", category: "weather" },
-            { name: "A2 News Albania", url: "https://tv.a2news.com/live/smil:a2cnnweb.stream.smil/playlist.m3u8", category: "news" },
-            { name: "LA7 Cinema", url: "https://viamotionhsi.netplus.ch/live/eds/la7d/browser-HLS8/la7d.m3u8", category: "entertainment" },
-            { name: "LA7", url: "https://d3749synfikwkv.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-74ylxpgd78bpb/Live.m3u8", category: "entertainment" },
-            { name: "Euronews", url: "https://euronews-live-spa-es.fast.rakuten.tv/v1/master/0547f18649bd788bec7b67b746e47670f558b6b2/production-LiveChannel-6571/bitok/eyJzdGlkIjoiMDA0YjY0NTMtYjY2MC00ZTZkLTlkNzItMTk3YTM3ZDZhZWIxIiwibWt0IjoiZXMiLCJjaCI6NjU3MSwicHRmIjoxfQ==/26034/euronews-es.m3u8", category: "news" },
-            { name: "Sky News Weather", url: "https://distro001-gb-hls1-prd.delivery.skycdp.com/easel_cdn/ngrp:weather_loop.stream_all/playlist.m3u8", category: "weather" },
-            { name: "Accu Weather", url: "https://cdn-ue1-prod.tsv2.amagi.tv/linear/amg00684-accuweather-accuweather-plex/playlist.m3u8", category: "weather" },
-            { name: "ABC News", url: "https://content.uplynk.com/channel/3324f2467c414329b3b0cc5cd987b6be.m3u8", category: "news" },
-            { name: "Retro Music", url: "https://stream.mediawork.cz/retrotv/smil:retrotv2.smil/playlist.m3u8", category: "music" },
-            { name: "TRT World", url: "https://tv-trtworld.medya.trt.com.tr/master.m3u8", category: "news" },
-            { name: "RT Español", url: "https://rt-esp.rttv.com/dvr/rtesp/playlist.m3u8", category: "news" },
-            { name: "CBS News", url: "https://dai.google.com/linear/hls/event/Sid4xiTQTkCT1SLu6rjUSQ/master.m3u8", category: "news" },
-            { name: "Qatar TV", url: "https://qatartv.akamaized.net/hls/live/2026573/qtv1/master.m3u8", category: "news" },
-            { name: "TV1 Bulgaria", url: "https://tv1.cloudcdn.bg/temp/livestream.m3u8", category: "entertainment" },
-            { name: "CK1 Ukraine", url: "http://cdn10.live-tv.od.ua:8081/sk1zt/sk1zt-abr/playlist.m3u8", category: "entertainment" },
-            { name: "Discovery Channel", url: "https://d24aqelmrau4kx.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-l1oas691aj7p2/WBTV_IT.m3u8", category: "entertainment" },
-            { name: "RTP1 Portugal", url: "https://streaming-live.rtp.pt/liverepeater/smil:rtp1HD.smil/playlist.m3u8", category: "entertainment" },
-            { name: "DION TV", url: "https://rtmp.win:3650/live/diontvlive.m3u8", category: "entertainment" },
-            { name: "Pet TV", url: "https://the-pet-collective-international-it.samsung.wurl.tv/playlist.m3u8", category: "entertainment" },
-            { name: "RT France", url: "https://rt-fra.rttv.com/dvr/rtfrance/playlist.m3u8", category: "news" },
-            { name: "RTV Austria", url: "http://iptv.rtv-ooe.at/stream.m3u8", category: "entertainment" },
-            { name: "Óčko Music", url: "https://ocko-live.ssl.cdn.cra.cz/channels/ocko/playlist.m3u8", category: "music" },
-            { name: "VRS TV", url: "https://57214cb172d84f8cb311b91513952b03.msvdn.net/live/S40896499/ZuaLjACsWIL4/playlist.m3u8", category: "entertainment" },
-            { name: "Junior TV", url: "https://5f22d76e220e1.streamlock.net/iuniortv/iuniortv/playlist.m3u8", category: "entertainment" }
+            // CANALI FUNZIONANTI
+            { name: "🌍 DW Deutsch", url: "https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8", category: "news", working: true },
+            { name: "🎵 Retro Music TV", url: "https://stream.mediawork.cz/retrotv/smil:retrotv2.smil/playlist.m3u8", category: "music", working: true },
+            { name: "🇹🇷 TRT World", url: "https://tv-trtworld.medya.trt.com.tr/master.m3u8", category: "news", working: true },
+            { name: "🇶🇦 Qatar TV", url: "https://qatartv.akamaized.net/hls/live/2026573/qtv1/master.m3u8", category: "news", working: true },
+            { name: "🇧🇬 TV1 Bulgaria", url: "https://tv1.cloudcdn.bg/temp/livestream.m3u8", category: "entertainment", working: true },
+            { name: "🇨🇿 Óčko Music", url: "https://ocko-live.ssl.cdn.cra.cz/channels/ocko/playlist.m3u8", category: "music", working: true },
+            { name: "📺 Junior TV", url: "https://5f22d76e220e1.streamlock.net/iuniortv/iuniortv/playlist.m3u8", category: "entertainment", working: true },
+            
+            // CANALI CON LINK ESTERNI (fallback)
+            { name: "🇺🇸 CNN International", url: "https://edition.cnn.com/international", category: "news", working: false, external: true },
+            { name: "🇺🇸 Fox News", url: "https://www.foxnews.com", category: "news", working: false, external: true },
+            { name: "🌍 Al Jazeera", url: "https://www.aljazeera.com/live", category: "news", working: false, external: true },
+            { name: "🇦🇺 Sky News Australia", url: "https://www.skynews.com.au", category: "news", working: false, external: true },
+            { name: "🇺🇸 Bloomberg", url: "https://www.bloomberg.com/live", category: "news", working: false, external: true },
+            { name: "🌤️ Fox Weather", url: "https://www.foxweather.com/live", category: "weather", working: false, external: true },
+            { name: "🇦🇱 A2 News Albania", url: "https://a2news.com/live", category: "news", working: false, external: true },
+            { name: "🇮🇹 LA7", url: "https://www.la7.it/dirette", category: "entertainment", working: false, external: true },
+            { name: "🇪🇺 Euronews", url: "https://www.euronews.com/live", category: "news", working: false, external: true },
+            { name: "🌤️ Accu Weather", url: "https://www.accuweather.com", category: "weather", working: false, external: true },
+            { name: "🇺🇸 ABC News", url: "https://abcnews.go.com/Live", category: "news", working: false, external: true },
+            { name: "🇷🇺 RT Español", url: "https://actualidad.rt.com/en_vivo", category: "news", working: false, external: true },
+            { name: "🇺🇸 CBS News", url: "https://www.cbsnews.com/live", category: "news", working: false, external: true },
+            { name: "🔬 Discovery Channel", url: "https://www.discovery.com", category: "entertainment", working: false, external: true },
+            { name: "🇵🇹 RTP1 Portugal", url: "https://www.rtp.pt/play/direto/rtp1", category: "entertainment", working: false, external: true },
+            { name: "🐾 Pet TV", url: "https://thepetcollective.tv", category: "entertainment", working: false, external: true },
+            { name: "🇫🇷 RT France", url: "https://francais.rt.com/live", category: "news", working: false, external: true }
         ];
 
         const videoPlayer = document.getElementById('video-player');
-        const videoContainer = document.getElementById('video-container');
         const channelList = document.getElementById('channel-list');
         const loading = document.getElementById('loading');
+        
         let currentCategory = 'all';
         let currentSearch = '';
+        let currentChannel = null;
 
-        // Genera la lista dei canali
+        // GENERA LISTA CANALI
         function generateChannelList() {
             channelList.innerHTML = '';
             
@@ -261,11 +254,21 @@
             filteredChannels.forEach(channel => {
                 const button = document.createElement('button');
                 button.className = 'channel-btn';
-                button.onclick = () => playStream(channel.url, channel.name);
+                
+                if (currentChannel && currentChannel.name === channel.name) {
+                    button.classList.add('playing');
+                }
+                
+                let statusIcon = channel.working ? '✅' : '🌐';
+                if (currentChannel && currentChannel.name === channel.name) {
+                    statusIcon = '▶️';
+                }
+                
+                button.onclick = () => playStream(channel);
                 
                 button.innerHTML = `
-                    <div class="channel-name">${channel.name}</div>
-                    <div class="channel-desc">${getCategoryName(channel.category)}</div>
+                    <div class="channel-name">${statusIcon} ${channel.name}</div>
+                    <div class="channel-desc">${getCategoryName(channel.category)} ${channel.external ? '(Link esterno)' : ''}</div>
                 `;
                 
                 channelList.appendChild(button);
@@ -277,57 +280,79 @@
                 'news': '📰 Notizie',
                 'sports': '⚽ Sport', 
                 'music': '🎵 Musica',
-                'entertainment': '🎬 Intrattenimento',
+                'entertainment': '📺 TV',
                 'weather': '🌤️ Meteo'
             };
             return categories[category] || 'Altro';
         }
 
-        function playStream(url, channelName) {
+        // PLAY STREAM MIGLIORATO
+        function playStream(channel) {
+            console.log("Tentativo di caricamento:", channel.name, channel.url);
+            
+            // Se è un link esterno, apri in nuova finestra
+            if (channel.external) {
+                window.open(channel.url, '_blank');
+                return;
+            }
+
+            currentChannel = channel;
+            
             // Mostra loading
             loading.classList.remove('hidden');
-            channelList.classList.add('hidden');
-            videoContainer.classList.add('hidden');
-
-            // Aggiorna titolo header
-            document.querySelector('.header h1').textContent = `📺 ${channelName}`;
-
-            // Imposta la sorgente video
-            videoPlayer.src = url;
             
-            // Prova a caricare il video
+            // Aggiorna lista per mostrare "now playing"
+            generateChannelList();
+
+            // Ferma video precedente
+            videoPlayer.pause();
+            
+            // Imposta nuova sorgente
+            videoPlayer.src = channel.url;
+            
+            // Forza il caricamento
             videoPlayer.load();
-            
+
+            // Eventi per gestire il caricamento
             videoPlayer.oncanplay = function() {
+                console.log("Video pronto:", channel.name);
                 loading.classList.add('hidden');
-                videoContainer.classList.remove('hidden');
+                videoPlayer.play().catch(e => {
+                    console.log("Auto-play fallito, ma video pronto");
+                    loading.classList.add('hidden');
+                });
+            };
+            
+            videoPlayer.onplaying = function() {
+                console.log("Riproduzione iniziata:", channel.name);
+                loading.classList.add('hidden');
             };
             
             videoPlayer.onerror = function() {
+                console.log("Errore video per:", channel.name);
                 loading.classList.add('hidden');
-                showChannelList();
-                alert(`❌ Impossibile caricare ${channelName}. Il canale potrebbe essere offline.`);
+                
+                // Fallback: prova ad aprire il link esterno
+                setTimeout(() => {
+                    if (!videoPlayer.src || videoPlayer.error) {
+                        alert(`❌ ${channel.name} non disponibile come stream diretto.\nVerrai reindirizzato al sito web.`);
+                        window.open(channel.url, '_blank');
+                    }
+                }, 1000);
             };
 
-            // Timeout dopo 15 secondi
+            // Timeout di sicurezza
             setTimeout(function() {
-                if (videoContainer.classList.contains('hidden') && !loading.classList.contains('hidden')) {
-                    videoPlayer.onerror();
+                if (!loading.classList.contains('hidden')) {
+                    console.log("Timeout per:", channel.name);
+                    loading.classList.add('hidden');
+                    
+                    if (!videoPlayer.src || videoPlayer.error || videoPlayer.paused) {
+                        alert(`⏱️ ${channel.name} sta impiegando troppo tempo.\nVerrai reindirizzato al sito web.`);
+                        window.open(channel.url, '_blank');
+                    }
                 }
-            }, 15000);
-        }
-
-        function showChannelList() {
-            videoContainer.classList.add('hidden');
-            loading.classList.add('hidden');
-            channelList.classList.remove('hidden');
-            
-            // Ripristina titolo header
-            document.querySelector('.header h1').textContent = '📺 RetegramNews24';
-            
-            // Ferma il video
-            videoPlayer.pause();
-            videoPlayer.src = '';
+            }, 8000);
         }
 
         function filterChannels() {
@@ -337,25 +362,24 @@
 
         function filterByCategory(category) {
             currentCategory = category;
-            
-            // Aggiorna bottoni categoria
             document.querySelectorAll('.category-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
             event.target.classList.add('active');
-            
             generateChannelList();
         }
 
-        // Tasti di scelta rapida
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                showChannelList();
-            }
+        // GESTIONE ERRORI
+        videoPlayer.addEventListener('error', function(e) {
+            console.error('Errore video player:', videoPlayer.error);
         });
 
-        // Inizializza l'app
+        // INIZIALIZZA L'APP
         generateChannelList();
+
+        console.log("🎬 RetegramNews24 caricato con", channels.length, "canali");
+        console.log("✅ Canali funzionanti:", channels.filter(c => c.working).length);
+        console.log("🌐 Link esterni:", channels.filter(c => c.external).length);
     </script>
 </body>
 </html>
