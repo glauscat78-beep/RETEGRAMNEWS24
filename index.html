@@ -385,32 +385,6 @@
             color: var(--secondary);
         }
 
-        /* Quality Selector */
-        .quality-selector {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(0,0,0,0.7);
-            border-radius: 15px;
-            padding: 0.4rem 0.6rem;
-            z-index: 10;
-        }
-
-        .quality-btn {
-            background: none;
-            border: none;
-            color: var(--light);
-            font-size: 0.7rem;
-            cursor: pointer;
-            padding: 0.2rem 0.4rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-
-        .quality-btn.active {
-            background: var(--primary);
-        }
-
         /* Loading */
         .loading {
             position: fixed;
@@ -470,6 +444,7 @@
         /* Fullscreen styles */
         body.fullscreen {
             overflow: hidden;
+            background: #000;
         }
 
         .fullscreen .video-section {
@@ -491,6 +466,8 @@
 
         .fullscreen #video-player {
             height: 100%;
+            width: 100%;
+            object-fit: contain;
         }
 
         .fullscreen .custom-controls {
@@ -498,6 +475,7 @@
             bottom: 0;
             left: 0;
             right: 0;
+            z-index: 1001;
         }
 
         .fullscreen .content {
@@ -581,21 +559,14 @@
     <!-- Video Player - FISSO IN ALTO -->
     <section class="video-section" id="video-section">
         <div class="video-container" id="video-container">
-            <div class="quality-selector" id="quality-selector">
-                <button class="quality-btn active" onclick="setQuality('auto')">Auto</button>
-                <button class="quality-btn" onclick="setQuality('720p')">720p</button>
-                <button class="quality-btn" onclick="setQuality('480p')">480p</button>
-            </div>
-            
             <!-- Player placeholder semplificato -->
-            <div id="player-placeholder" class="player-placeholder">
+            <div id="player-placeholder" class="player-placeholder hidden">
                 <i class="fas fa-play-circle"></i>
             </div>
             
             <video 
                 id="video-player" 
                 playsinline
-                class="hidden"
                 crossorigin="anonymous"
             >
                 Il tuo browser non supporta il tag video.
@@ -908,28 +879,30 @@
         const videoSection = document.getElementById('video-section');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
-        const contentSection = document.querySelector('.content');
-        const headerSection = document.querySelector('.header');
 
         // Stato applicazione
         let currentCategory = 'all';
         let currentSearch = '';
         let currentTab = 'all';
         let currentChannel = null;
-        let currentQuality = 'auto';
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
         let recentChannels = JSON.parse(localStorage.getItem('recentChannels')) || [];
         let hls = null;
         let isFullscreen = false;
 
-        // Inizializzazione
+        // Inizializzazione - AVVIA SUBITO IL PRIMO CANALE
         function init() {
-            generateChannelList();
             setupEventListeners();
             loadUserPreferences();
+            generateChannelList();
             
             // Disabilita controlli nativi
             disableNativeControls();
+            
+            // Avvia automaticamente il primo canale
+            setTimeout(() => {
+                playChannel(channels[0]);
+            }, 500);
         }
 
         // Disabilita controlli nativi del video
@@ -950,10 +923,11 @@
             videoContainer.addEventListener('touchstart', handleVideoTouchStart);
             videoContainer.addEventListener('touchend', handleVideoTouchEnd);
             
-            // Fullscreen events
+            // Fullscreen events per tutti i browser
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
         }
 
         // Carica preferenze utente
@@ -1049,7 +1023,6 @@
             loadingText.textContent = "Connessione allo stream...";
             loading.classList.remove('hidden');
             playerPlaceholder.classList.add('hidden');
-            videoPlayer.classList.remove('hidden');
 
             // Ferma HLS precedente
             if (hls) {
@@ -1206,14 +1179,28 @@
             const element = document.documentElement;
             
             if (element.requestFullscreen) {
-                element.requestFullscreen();
+                element.requestFullscreen().catch(err => {
+                    console.log('Fullscreen error:', err);
+                    // Fallback per Telegram e altri browser
+                    enterFullscreenFallback();
+                });
             } else if (element.webkitRequestFullscreen) {
                 element.webkitRequestFullscreen();
             } else if (element.mozRequestFullScreen) {
                 element.mozRequestFullScreen();
             } else if (element.msRequestFullscreen) {
                 element.msRequestFullscreen();
+            } else {
+                // Fallback per browser che non supportano fullscreen API
+                enterFullscreenFallback();
             }
+        }
+
+        function enterFullscreenFallback() {
+            // Fallback per Telegram Browser e altri browser limitati
+            document.body.classList.add('fullscreen');
+            isFullscreen = true;
+            showToast('Schermo intero');
         }
 
         function exitFullscreen() {
@@ -1225,6 +1212,11 @@
                 document.mozCancelFullScreen();
             } else if (document.msExitFullscreen) {
                 document.msExitFullscreen();
+            } else {
+                // Fallback
+                document.body.classList.remove('fullscreen');
+                isFullscreen = false;
+                showToast('Schermo normale');
             }
         }
 
@@ -1241,26 +1233,6 @@
                 document.body.classList.remove('fullscreen');
                 showToast('Schermo normale');
             }
-        }
-
-        function setQuality(quality) {
-            currentQuality = quality;
-            document.querySelectorAll('.quality-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            if (hls && hls.levels.length > 0) {
-                switch(quality) {
-                    case '720p':
-                        hls.currentLevel = hls.levels.findIndex(level => level.height <= 720);
-                        break;
-                    case '480p':
-                        hls.currentLevel = hls.levels.findIndex(level => level.height <= 480);
-                        break;
-                    default:
-                        hls.currentLevel = -1; // Auto
-                }
-            }
-            showToast(`Qualità: ${quality}`);
         }
 
         // Gestione preferiti
