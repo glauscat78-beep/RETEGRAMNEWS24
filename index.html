@@ -25,6 +25,7 @@
             --light: #f8fafc;
             --gray: #64748b;
             --success: #10b981;
+            --warning: #f59e0b;
         }
 
         body {
@@ -240,6 +241,10 @@
 
         .compact-btn.custom {
             background: var(--secondary);
+        }
+
+        .compact-btn.random {
+            background: var(--warning);
         }
 
         .compact-btn:hover {
@@ -741,6 +746,11 @@
                 <i class="fas fa-plus"></i>
                 <span>Nuovo</span>
             </button>
+            <!-- NUOVO PULSANTE RANDOM -->
+            <button class="compact-btn random" onclick="playRandomChannel()" id="random-btn">
+                <i class="fas fa-random"></i>
+                <span>Random</span>
+            </button>
             <input type="file" id="import-file" class="file-input" accept=".txt" onchange="importFavorites(event)">
         </div>
 
@@ -802,6 +812,7 @@
         const videoContainer = document.getElementById('video-container');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
+        const randomBtn = document.getElementById('random-btn');
 
         // Stato applicazione
         let channels = [];
@@ -817,6 +828,12 @@
         
         // MODIFICA: Le categorie partono chiuse di default
         let expandedCountries = JSON.parse(localStorage.getItem('expandedCountries')) || {};
+
+        // NUOVO: Stato per il random player
+        let randomAttempts = 0;
+        const MAX_RANDOM_ATTEMPTS = 5;
+        let triedChannels = new Set();
+        let isRandomMode = false;
 
         // Canale predefinito - RetegramNEWS
         const defaultChannel = {
@@ -1107,6 +1124,67 @@
             }
         }
 
+        // NUOVA FUNZIONE: Riproduci canale casuale
+        function playRandomChannel() {
+            if (channels.length === 0) {
+                showToast('Nessun canale disponibile');
+                return;
+            }
+
+            // Reset stato random
+            randomAttempts = 0;
+            triedChannels.clear();
+            isRandomMode = true;
+            
+            // Disabilita temporaneamente il pulsante random
+            randomBtn.disabled = true;
+            randomBtn.innerHTML = '<i class="fas fa-sync fa-spin"></i><span>Ricerca...</span>';
+            
+            // Avvia la ricerca di un canale funzionante
+            tryRandomChannel();
+        }
+
+        // NUOVA FUNZIONE: Prova un canale casuale
+        function tryRandomChannel() {
+            if (randomAttempts >= MAX_RANDOM_ATTEMPTS) {
+                showToast('Nessun canale funzionante trovato. Riprova più tardi.');
+                resetRandomButton();
+                return;
+            }
+
+            randomAttempts++;
+            
+            // Filtra i canali non ancora provati
+            const availableChannels = channels.filter(channel => 
+                !triedChannels.has(channel.id) && channel.id !== currentChannel?.id
+            );
+            
+            if (availableChannels.length === 0) {
+                showToast('Tutti i canali sono stati provati');
+                resetRandomButton();
+                return;
+            }
+
+            // Seleziona un canale casuale
+            const randomIndex = Math.floor(Math.random() * availableChannels.length);
+            const randomChannel = availableChannels[randomIndex];
+            
+            // Aggiungi ai canali provati
+            triedChannels.add(randomChannel.id);
+            
+            showToast(`🎲 Tentativo ${randomAttempts}/${MAX_RANDOM_ATTEMPTS}: ${randomChannel.name}`);
+            
+            // Prova a riprodurre il canale
+            playChannel(randomChannel, true);
+        }
+
+        // NUOVA FUNZIONE: Reset pulsante random
+        function resetRandomButton() {
+            isRandomMode = false;
+            randomBtn.disabled = false;
+            randomBtn.innerHTML = '<i class="fas fa-random"></i><span>Random</span>';
+        }
+
         // Disabilita controlli nativi
         function disableNativeControls() {
             videoPlayer.removeAttribute('controls');
@@ -1120,6 +1198,7 @@
             videoPlayer.addEventListener('volumechange', updateVolumeUI);
             videoPlayer.addEventListener('ended', onVideoEnded);
             videoPlayer.addEventListener('loadedmetadata', onVideoLoaded);
+            videoPlayer.addEventListener('error', onVideoError);
             
             searchInput.addEventListener('input', handleSearch);
             
@@ -1145,6 +1224,18 @@
             document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
             document.addEventListener('keydown', handleKeyPress);
+        }
+
+        // NUOVA FUNZIONE: Gestione errori video
+        function onVideoError() {
+            if (isRandomMode) {
+                // Se siamo in modalità random e c'è un errore, prova un altro canale
+                setTimeout(() => {
+                    tryRandomChannel();
+                }, 1000);
+            } else {
+                showError(`Errore caricamento: ${currentChannel?.name || 'Canale sconosciuto'}`);
+            }
         }
 
         // Gestione ricerca
@@ -1403,8 +1494,8 @@
             switchTab('custom');
         }
 
-        // Riproduci canale
-        function playChannel(channel) {
+        // Riproduci canale (modificata per supportare modalità random)
+        function playChannel(channel, isRandom = false) {
             console.log('Riproduzione canale:', channel.name);
             
             currentChannel = channel;
@@ -1427,6 +1518,8 @@
             videoPlayer.pause();
             videoPlayer.src = '';
 
+            let playSuccess = false;
+
             if (channel.url.includes('.m3u8') && Hls.isSupported()) {
                 hls = new Hls({
                     enableWorker: true,
@@ -1439,43 +1532,79 @@
                 
                 hls.on(Hls.Events.MANIFEST_PARSED, () => {
                     loading.classList.add('hidden');
-                    videoPlayer.play().catch(e => {
+                    videoPlayer.play().then(() => {
+                        playSuccess = true;
+                        if (isRandom) {
+                            showToast(`🎲 Canale trovato: ${channel.name}`);
+                            resetRandomButton();
+                        } else {
+                            showToast(`Canale: ${channel.name}`);
+                        }
+                    }).catch(e => {
                         console.log('Auto-play fallito:', e);
-                        showToast('Clicca play per avviare il video');
+                        if (isRandom) {
+                            // In modalità random, se l'autoplay fallisce, prova un altro canale
+                            tryRandomChannel();
+                        } else {
+                            showToast('Clicca play per avviare il video');
+                        }
                     });
-                    showToast(`Canale: ${channel.name}`);
                 });
 
                 hls.on(Hls.Events.ERROR, (event, data) => {
                     console.error('HLS Error:', data);
                     if (data.fatal) {
                         loading.classList.add('hidden');
-                        showError(`Errore stream: ${channel.name}`);
+                        if (isRandom) {
+                            // In modalità random, se c'è un errore, prova un altro canale
+                            tryRandomChannel();
+                        } else {
+                            showError(`Errore stream: ${channel.name}`);
+                        }
                     }
                 });
             } else {
                 videoPlayer.src = channel.url;
                 videoPlayer.addEventListener('loadedmetadata', () => {
                     loading.classList.add('hidden');
-                    videoPlayer.play().catch(e => {
+                    videoPlayer.play().then(() => {
+                        playSuccess = true;
+                        if (isRandom) {
+                            showToast(`🎲 Canale trovato: ${channel.name}`);
+                            resetRandomButton();
+                        } else {
+                            showToast(`Canale: ${channel.name}`);
+                        }
+                    }).catch(e => {
                         console.log('Auto-play fallito:', e);
-                        showToast('Clicca play per avviare il video');
+                        if (isRandom) {
+                            tryRandomChannel();
+                        } else {
+                            showToast('Clicca play per avviare il video');
+                        }
                     });
-                    showToast(`Canale: ${channel.name}`);
                 });
             }
 
             videoPlayer.addEventListener('error', () => {
                 loading.classList.add('hidden');
-                showError(`Errore caricamento: ${channel.name}`);
+                if (isRandom) {
+                    tryRandomChannel();
+                } else {
+                    showError(`Errore caricamento: ${channel.name}`);
+                }
             });
 
             setTimeout(() => {
-                if (!loading.classList.contains('hidden')) {
+                if (!loading.classList.contains('hidden') && !playSuccess) {
                     loading.classList.add('hidden');
-                    showError(`Timeout: ${channel.name}`);
+                    if (isRandom) {
+                        tryRandomChannel();
+                    } else {
+                        showError(`Timeout: ${channel.name}`);
+                    }
                 }
-            }, 15000);
+            }, 10000);
         }
 
         // Navigazione tab
@@ -1751,6 +1880,11 @@
             if (e.key === ' ' && e.target === document.body) {
                 e.preventDefault();
                 togglePlay();
+            }
+            // Tasto R per random
+            if (e.key === 'r' && e.target === document.body) {
+                e.preventDefault();
+                playRandomChannel();
             }
         }
 
