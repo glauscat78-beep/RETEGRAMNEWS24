@@ -9,134 +9,237 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             color: white;
             min-height: 100vh;
-            padding: 20px;
         }
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding: 20px 0;
-        }
-        h1 {
-            font-size: 2em;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            opacity: 0.8;
-            font-size: 1.1em;
-        }
-        .channel-list {
+        
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
             display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 30px;
+            justify-content: space-between;
+            align-items: center;
         }
-        .channel-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 20px;
+        .header h1 {
+            font-size: 1.3em;
+            margin: 0;
+        }
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .channel-card:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        .channel-card h3 {
-            margin-bottom: 8px;
-            font-size: 1.2em;
-        }
-        .channel-card p {
-            opacity: 0.8;
             font-size: 0.9em;
         }
-        footer {
-            text-align: center;
-            margin-top: 40px;
+
+        /* VIDEO PLAYER */
+        .video-container {
+            margin-top: 60px;
+            background: #000;
+        }
+        #video-player {
+            width: 100%;
+            height: 250px;
+            background: #000;
+        }
+
+        /* CHANNEL LIST */
+        .channel-list {
+            padding: 20px;
+            background: #111;
+        }
+        .channel-btn {
+            background: #333;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            color: white;
+            margin-bottom: 10px;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .channel-btn:hover {
+            background: #444;
+        }
+        .channel-name {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .channel-desc {
+            font-size: 0.9em;
             opacity: 0.7;
-            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* LOADING */
+        .loading {
+            text-align: center;
+            padding: 50px 20px;
+            background: #000;
+        }
+        .hidden {
+            display: none;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>📺 RetegramNews24</h1>
-            <p class="subtitle">Streaming News Dirette</p>
-        </header>
+    <!-- HEADER -->
+    <div class="header">
+        <button class="back-btn" onclick="showChannelList()">← Canali</button>
+        <h1>📺 RetegramNews24</h1>
+        <div style="width: 70px;"></div> <!-- Spazio vuoto per bilanciare -->
+    </div>
+
+    <!-- VIDEO PLAYER -->
+    <div id="video-container" class="video-container hidden">
+        <video 
+            id="video-player" 
+            controls 
+            autoplay 
+            playsinline
+            poster="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjI1MCIgdmlld0JveD0iMCAwIDQwMCAyNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iMjUwIiBmaWxsPSIjMTExMTExIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjE2Ij7imYLigqwgU3RyZWFtaW5nIExpdmUg4pmC4oKsPC90ZXh0Pgo8L3N2Zz4K"
+        >
+            Il tuo browser non supporta il tag video.
+        </video>
+    </div>
+
+    <!-- LOADING -->
+    <div id="loading" class="loading hidden">
+        <p>📡 Caricamento stream...</p>
+    </div>
+
+    <!-- CHANNEL LIST -->
+    <div id="channel-list" class="channel-list">
+        <button class="channel-btn" onclick="playStream('rainews24')">
+            <div class="channel-name">Rai News 24</div>
+            <div class="channel-desc">Notizie italiane 24/7</div>
+        </button>
         
-        <div class="channel-list">
-            <div class="channel-card" onclick="openStream('rainews24')">
-                <h3>Rai News 24</h3>
-                <p>Notizie italiane 24/7</p>
-            </div>
-            
-            <div class="channel-card" onclick="openStream('skytg24')">
-                <h3>Sky TG24</h3>
-                <p>Informazione continua</p>
-            </div>
-            
-            <div class="channel-card" onclick="openStream('france24')">
-                <h3>France 24</h3>
-                <p>Notizie internazionali</p>
-            </div>
-            
-            <div class="channel-card" onclick="openStream('cnn')">
-                <h3>CNN International</h3>
-                <p>News globali</p>
-            </div>
-            
-            <div class="channel-card" onclick="openStream('bbc')">
-                <h3>BBC World</h3>
-                <p>Informazione britannica</p>
-            </div>
-        </div>
+        <button class="channel-btn" onclick="playStream('francetv')">
+            <div class="channel-name">France 24 English</div>
+            <div class="channel-desc">Notizie internazionali</div>
+        </button>
         
-        <footer>
-            <p>Seleziona un canale per lo streaming diretto</p>
-        </footer>
+        <button class="channel-btn" onclick="playStream('euronews')">
+            <div class="channel-name">Euronews</div>
+            <div class="channel-desc">Notizie europee</div>
+        </button>
+        
+        <button class="channel-btn" onclick="playStream('dw')">
+            <div class="channel-name">DW News</div>
+            <div class="channel-desc">Notizie tedesche</div>
+        </button>
+        
+        <button class="channel-btn" onclick="playStream('aljazeera')">
+            <div class="channel-name">Al Jazeera</div>
+            <div class="channel-desc">Notizie mediorientali</div>
+        </button>
     </div>
 
     <script>
-        // Inizializza Telegram Web App se aperta in Telegram
-        if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-            const tg = Telegram.WebApp;
-            tg.expand();
-            tg.enableClosingConfirmation();
+        // Inizializza Telegram Web App
+        if (typeof Telegram !== 'undefined') {
+            Telegram.WebApp.expand();
+            Telegram.WebApp.enableClosingConfirmation();
         }
 
-        function openStream(channel) {
-            const streams = {
-                'rainews24': 'https://www.raiplay.it/dirette/rainews24',
-                'skytg24': 'https://stream.sky.it/skyTG24/skyTG24.m3u8',
-                'france24': 'https://www.france24.com/en/live-tv',
-                'cnn': 'https://edition.cnn.com/international',
-                'bbc': 'https://www.bbc.com/news/live/world'
+        // Stream URLs - M3U8 e MP4 diretti
+        const streams = {
+            'rainews24': 'https://rainews1-live.akamaized.net/hls/live/598326/rainews1/rainews1/rainews_1.m3u8',
+            'francetv': 'https://freetvonline.com/stream/france-24-english-live-stream.php',
+            'euronews': 'https://youtu.be/ewOPQZZn4SY?si=GWf0dH4qDdHpz0yL',
+            'dw': 'https://www.dw.com/en/media-center/live-tv/s-100825',
+            'aljazeera': 'https://www.aljazeera.com/live/'
+        };
+
+        const videoPlayer = document.getElementById('video-player');
+        const videoContainer = document.getElementById('video-container');
+        const channelList = document.getElementById('channel-list');
+        const loading = document.getElementById('loading');
+
+        function playStream(channel) {
+            const streamUrl = streams[channel];
+            
+            if (!streamUrl) {
+                alert('Canale non disponibile');
+                return;
+            }
+
+            // Mostra loading
+            loading.classList.remove('hidden');
+            channelList.classList.add('hidden');
+            videoContainer.classList.add('hidden');
+
+            // Imposta la sorgente video
+            videoPlayer.src = streamUrl;
+            
+            // Prova a caricare il video
+            videoPlayer.load();
+            
+            videoPlayer.oncanplay = function() {
+                loading.classList.add('hidden');
+                videoContainer.classList.remove('hidden');
+            };
+            
+            videoPlayer.onerror = function() {
+                loading.classList.add('hidden');
+                channelList.classList.remove('hidden');
+                alert('❌ Impossibile caricare lo stream. Prova un altro canale o apri il link esterno.');
+                
+                // Fallback: apri link esterno
+                if (channel === 'rainews24') {
+                    window.open('https://www.raiplay.it/dirette/rainews24', '_blank');
+                } else if (channel === 'francetv') {
+                    window.open('https://www.france24.com/en/live-tv', '_blank');
+                } else if (channel === 'euronews') {
+                    window.open('https://www.euronews.com/live', '_blank');
+                } else if (channel === 'dw') {
+                    window.open('https://www.dw.com/en/media-center/live-tv/s-100825', '_blank');
+                } else if (channel === 'aljazeera') {
+                    window.open('https://www.aljazeera.com/live/', '_blank');
+                }
             };
 
-            const streamUrl = streams[channel];
-            if (streamUrl) {
-                // Apri in una nuova finestra
-                window.open(streamUrl, '_blank');
-                
-                // Mostra conferma se in Telegram
-                if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-                    Telegram.WebApp.showPopup({
-                        title: 'Canale Aperto',
-                        message: `Stai guardando: ${channel}`,
-                        buttons: [{ type: 'ok' }]
-                    });
+            // Timeout dopo 10 secondi
+            setTimeout(function() {
+                if (videoContainer.classList.contains('hidden')) {
+                    videoPlayer.onerror();
                 }
-            }
+            }, 10000);
         }
+
+        function showChannelList() {
+            videoContainer.classList.add('hidden');
+            loading.classList.add('hidden');
+            channelList.classList.remove('hidden');
+            
+            // Ferma il video
+            videoPlayer.pause();
+            videoPlayer.src = '';
+        }
+
+        // Tasti di scelta rapida
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                showChannelList();
+            }
+        });
+
+        // Gestione errori video
+        videoPlayer.addEventListener('error', function(e) {
+            console.error('Video error:', videoPlayer.error);
+        });
     </script>
 </body>
 </html>
