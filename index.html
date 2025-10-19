@@ -309,6 +309,10 @@
             border-color: var(--secondary);
         }
 
+        .channel-card.custom {
+            border-color: var(--success);
+        }
+
         .channel-icon {
             width: 32px;
             height: 32px;
@@ -319,6 +323,10 @@
             justify-content: center;
             font-size: 0.8rem;
             flex-shrink: 0;
+        }
+
+        .channel-icon.custom {
+            background: linear-gradient(135deg, var(--success), #059669);
         }
 
         .channel-info {
@@ -373,6 +381,10 @@
 
         .action-btn.copy {
             color: var(--primary);
+        }
+
+        .action-btn.delete {
+            color: var(--secondary);
         }
 
         /* Loading */
@@ -535,12 +547,13 @@
 
         .url-input-group {
             display: flex;
+            flex-direction: column;
             gap: 0.5rem;
             margin-bottom: 0.5rem;
         }
 
-        .url-input {
-            flex: 1;
+        .url-input, .channel-name-input {
+            width: 100%;
             padding: 0.6rem;
             background: var(--dark);
             border: 2px solid transparent;
@@ -549,12 +562,18 @@
             font-size: 0.8rem;
         }
 
-        .url-input:focus {
+        .url-input:focus, .channel-name-input:focus {
             outline: none;
             border-color: var(--primary);
         }
 
-        .url-play-btn {
+        .url-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .url-play-btn, .url-save-btn {
+            flex: 1;
             background: var(--success);
             color: white;
             border: none;
@@ -562,6 +581,14 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .url-save-btn {
+            background: var(--primary);
         }
 
         .no-results {
@@ -583,6 +610,14 @@
             .channel-list {
                 grid-template-columns: 1fr 1fr;
             }
+
+            .url-input-group {
+                flex-direction: row;
+            }
+
+            .url-input, .channel-name-input {
+                flex: 1;
+            }
         }
     </style>
 </head>
@@ -603,6 +638,9 @@
                 </button>
                 <button class="nav-tab" onclick="switchTab('recent')">
                     <i class="fas fa-history"></i>
+                </button>
+                <button class="nav-tab" onclick="switchTab('custom')">
+                    <i class="fas fa-link"></i>
                 </button>
             </div>
         </div>
@@ -660,8 +698,8 @@
                 Importa Preferiti
             </button>
             <button class="custom-url-btn" onclick="toggleCustomUrl()">
-                <i class="fas fa-link"></i>
-                Link Personalizzato
+                <i class="fas fa-plus"></i>
+                Nuovo Canale
             </button>
             <input type="file" id="import-file" class="file-input" accept=".txt" onchange="importFavorites(event)">
         </div>
@@ -669,12 +707,18 @@
         <!-- Custom URL Input -->
         <div class="custom-url-container" id="custom-url-container">
             <div class="url-input-group">
-                <input type="text" id="custom-url-input" class="url-input" placeholder="Incolla URL stream (m3u8, mp4, ecc.)">
+                <input type="text" id="channel-name-input" class="channel-name-input" placeholder="Nome del canale (es: Film Azione)" value="">
+                <input type="text" id="custom-url-input" class="url-input" placeholder="URL stream (m3u8, mp4, ecc.)">
+            </div>
+            <div class="url-buttons">
                 <button class="url-play-btn" onclick="playCustomUrl()">
                     <i class="fas fa-play"></i> Play
                 </button>
+                <button class="url-save-btn" onclick="saveCustomChannel()">
+                    <i class="fas fa-save"></i> Salva
+                </button>
             </div>
-            <div style="font-size: 0.7rem; color: var(--gray); text-align: center;">
+            <div style="font-size: 0.7rem; color: var(--gray); text-align: center; margin-top: 0.5rem;">
                 Supporta: m3u8, mp4, mpeg-dash, ecc.
             </div>
         </div>
@@ -716,6 +760,7 @@
         const searchInput = document.getElementById('search-input');
         const customUrlContainer = document.getElementById('custom-url-container');
         const customUrlInput = document.getElementById('custom-url-input');
+        const channelNameInput = document.getElementById('channel-name-input');
         const loading = document.getElementById('loading');
         const loadingText = document.getElementById('loading-text');
         const progressBar = document.getElementById('progress-bar');
@@ -733,6 +778,7 @@
         let currentChannel = null;
         let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
         let recentChannels = JSON.parse(localStorage.getItem('recentChannels')) || [];
+        let customChannels = JSON.parse(localStorage.getItem('customChannels')) || [];
         let hls = null;
         let isFullscreen = false;
         let searchQuery = '';
@@ -744,7 +790,8 @@
             name: "RetegramNEWS",
             url: "https://d3749synfikwkv.cloudfront.net/v1/master/3722c60a815c199d9c0ef36c5b73da68a62b09d1/cc-74ylxpgd78bpb/Live.m3u8",
             icon: "fas fa-newspaper",
-            country: "Italia"
+            country: "Italia",
+            type: "default"
         };
 
         // Mappa paesi e bandiere
@@ -775,6 +822,7 @@
             'uae': '🇦🇪',
             'mexico': '🇲🇽',
             'argentina': '🇦🇷',
+            'custom': '⭐',
             'default': '🌍'
         };
 
@@ -782,6 +830,9 @@
         async function init() {
             setupEventListeners();
             loadUserPreferences();
+            
+            // Carica canali personalizzati
+            loadCustomChannels();
             
             // Avvia subito RetegramNEWS
             setTimeout(() => {
@@ -795,6 +846,22 @@
             disableNativeControls();
         }
 
+        // Carica canali personalizzati dal localStorage
+        function loadCustomChannels() {
+            customChannels = JSON.parse(localStorage.getItem('customChannels')) || [];
+            updateChannelsList();
+        }
+
+        // Salva canali personalizzati nel localStorage
+        function saveCustomChannels() {
+            localStorage.setItem('customChannels', JSON.stringify(customChannels));
+        }
+
+        // Aggiorna lista canali completa
+        function updateChannelsList() {
+            channels = [defaultChannel, ...customChannels];
+        }
+
         // Carica canali da URL M3U8
         async function loadChannelsFromURL() {
             try {
@@ -805,7 +872,8 @@
                 const newChannels = parseM3U8(m3u8Content);
                 
                 if (newChannels.length > 0) {
-                    channels = [defaultChannel, ...newChannels]; // Aggiungi RetegramNEWS all'inizio
+                    // Combina tutti i canali: default + personalizzati + da internet
+                    channels = [defaultChannel, ...customChannels, ...newChannels];
                     
                     // Raggruppa canali per paese
                     groupChannelsByCountry();
@@ -815,11 +883,11 @@
                 
             } catch (error) {
                 console.error('Errore caricamento canali:', error);
-                // Usa solo RetegramNEWS se il caricamento fallisce
-                channels = [defaultChannel];
+                // Usa solo canali predefiniti e personalizzati se il caricamento fallisce
+                updateChannelsList();
                 groupChannelsByCountry();
                 generateChannelGroups();
-                showToast('Lista canali non disponibile - usando RetegramNEWS');
+                showToast('Lista canali non disponibile - usando canali salvati');
             }
         }
 
@@ -828,15 +896,23 @@
             groupedChannels = {};
             
             channels.forEach(channel => {
-                const country = channel.country || 'Altri';
+                let country = channel.country || 'Altri';
+                
+                // Per canali personalizzati, usa gruppo speciale
+                if (channel.type === 'custom') {
+                    country = 'Personalizzati';
+                }
+                
                 if (!groupedChannels[country]) {
                     groupedChannels[country] = [];
                 }
                 groupedChannels[country].push(channel);
             });
             
-            // Ordina paesi per numero di canali (decrescente)
+            // Ordina paesi: Personalizzati prima, poi altri in ordine decrescente
             const sortedCountries = Object.keys(groupedChannels).sort((a, b) => {
+                if (a === 'Personalizzati') return -1;
+                if (b === 'Personalizzati') return 1;
                 return groupedChannels[b].length - groupedChannels[a].length;
             });
             
@@ -881,12 +957,13 @@
                     }
                     
                     currentChannel = {
-                        id: channels.length + 1,
+                        id: Date.now() + i, // ID unico
                         name: name,
                         url: '',
                         icon: getChannelIcon(name),
                         logo: logo,
-                        country: country
+                        country: country,
+                        type: "internet"
                     };
                     
                     // Prossima linea dovrebbe essere l'URL
@@ -987,6 +1064,12 @@
                     playCustomUrl();
                 }
             });
+
+            channelNameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveCustomChannel();
+                }
+            });
             
             // Touch events
             videoContainer.addEventListener('touchstart', handleVideoTouchStart);
@@ -1023,13 +1106,15 @@
                 } else if (currentTab === 'recent') {
                     const recentIds = recentChannels.map(ch => ch.id);
                     countryChannels = countryChannels.filter(channel => recentIds.includes(channel.id));
+                } else if (currentTab === 'custom') {
+                    countryChannels = countryChannels.filter(channel => channel.type === 'custom');
                 }
                 
                 // Filtra per ricerca
                 if (searchQuery) {
                     countryChannels = countryChannels.filter(channel => 
                         channel.name.toLowerCase().includes(searchQuery) ||
-                        channel.country.toLowerCase().includes(searchQuery)
+                        (channel.country && channel.country.toLowerCase().includes(searchQuery))
                     );
                 }
                 
@@ -1046,6 +1131,7 @@
                         <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 1rem; opacity: 0.5;"></i>
                         <div>Nessun canale trovato</div>
                         ${searchQuery ? `<div style="margin-top: 0.5rem; font-size: 0.7rem;">Prova a modificare la ricerca</div>` : ''}
+                        ${currentTab === 'custom' ? `<div style="margin-top: 0.5rem; font-size: 0.7rem;">Usa "Nuovo Canale" per aggiungere stream personalizzati</div>` : ''}
                     </div>
                 `;
             }
@@ -1082,15 +1168,17 @@
         function createChannelCard(channel) {
             const isPlaying = currentChannel && currentChannel.id === channel.id;
             const isFavorite = favorites.includes(channel.id);
+            const isCustom = channel.type === 'custom';
             
             return `
-                <div class="channel-card ${isPlaying ? 'playing' : ''} ${isFavorite ? 'favorite' : ''}" onclick="playChannel(${JSON.stringify(channel).replace(/"/g, '&quot;')})">
-                    <div class="channel-icon">
+                <div class="channel-card ${isPlaying ? 'playing' : ''} ${isFavorite ? 'favorite' : ''} ${isCustom ? 'custom' : ''}" onclick="playChannel(${JSON.stringify(channel).replace(/"/g, '&quot;')})">
+                    <div class="channel-icon ${isCustom ? 'custom' : ''}">
                         <i class="${channel.icon}"></i>
                     </div>
                     <div class="channel-info">
                         <div class="channel-name">
                             ${isPlaying ? '<i class="fas fa-play" style="color: var(--primary); font-size: 0.6rem;"></i>' : ''}
+                            ${isCustom ? '<i class="fas fa-link" style="color: var(--success); font-size: 0.6rem;"></i>' : ''}
                             ${channel.name}
                         </div>
                         <div class="channel-url">${channel.url.substring(0, 40)}...</div>
@@ -1099,6 +1187,11 @@
                         <button class="action-btn copy" onclick="event.stopPropagation(); copyChannelUrl('${channel.url}')" title="Copia URL">
                             <i class="fas fa-copy"></i>
                         </button>
+                        ${isCustom ? `
+                        <button class="action-btn delete" onclick="event.stopPropagation(); deleteCustomChannel(${channel.id})" title="Elimina canale">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        ` : ''}
                         <button class="action-btn favorite ${isFavorite ? 'active' : ''}" onclick="event.stopPropagation(); toggleFavorite(${channel.id})" title="Aggiungi ai preferiti">
                             <i class="fas fa-heart"></i>
                         </button>
@@ -1117,6 +1210,18 @@
             });
         }
 
+        // Elimina canale personalizzato
+        function deleteCustomChannel(channelId) {
+            if (confirm('Sei sicuro di voler eliminare questo canale personalizzato?')) {
+                customChannels = customChannels.filter(channel => channel.id !== channelId);
+                saveCustomChannels();
+                updateChannelsList();
+                groupChannelsByCountry();
+                generateChannelGroups();
+                showToast('Canale personalizzato eliminato');
+            }
+        }
+
         // Espandi/contrai gruppo paese
         function toggleCountryGroup(country) {
             expandedCountries[country] = !expandedCountries[country];
@@ -1128,29 +1233,88 @@
         function toggleCustomUrl() {
             customUrlContainer.classList.toggle('show');
             if (customUrlContainer.classList.contains('show')) {
-                customUrlInput.focus();
+                channelNameInput.focus();
+                // Reset valori
+                channelNameInput.value = '';
+                customUrlInput.value = '';
             }
         }
 
         // Riproduci URL personalizzato
         function playCustomUrl() {
             const url = customUrlInput.value.trim();
+            const name = channelNameInput.value.trim() || "Stream Personalizzato";
+            
             if (!url) {
                 showToast('Inserisci un URL valido');
                 return;
             }
 
             const customChannel = {
-                id: -1, // ID speciale per canali personalizzati
-                name: "Stream Personalizzato",
+                id: -1, // ID temporaneo
+                name: name,
                 url: url,
                 icon: "fas fa-link",
-                country: "Personalizzato"
+                country: "Personalizzato",
+                type: "temporary"
             };
 
             playChannel(customChannel);
+        }
+
+        // Salva canale personalizzato
+        function saveCustomChannel() {
+            const url = customUrlInput.value.trim();
+            const name = channelNameInput.value.trim();
+            
+            if (!url) {
+                showToast('Inserisci un URL valido');
+                return;
+            }
+            
+            if (!name) {
+                showToast('Inserisci un nome per il canale');
+                channelNameInput.focus();
+                return;
+            }
+
+            // Verifica se il canale esiste già
+            const existingChannel = customChannels.find(channel => 
+                channel.url === url || channel.name.toLowerCase() === name.toLowerCase()
+            );
+            
+            if (existingChannel) {
+                showToast('Canale già esistente!');
+                return;
+            }
+
+            const customChannel = {
+                id: Date.now(), // ID unico basato sul timestamp
+                name: name,
+                url: url,
+                icon: getChannelIcon(name),
+                country: "Personalizzati",
+                type: "custom"
+            };
+
+            // Aggiungi ai canali personalizzati
+            customChannels.push(customChannel);
+            saveCustomChannels();
+            
+            // Aggiorna lista completa
+            updateChannelsList();
+            groupChannelsByCountry();
+            generateChannelGroups();
+            
+            // Reset e chiudi form
             customUrlInput.value = '';
+            channelNameInput.value = '';
             customUrlContainer.classList.remove('show');
+            
+            showToast(`Canale "${name}" salvato!`);
+            
+            // Passa alla tab Personalizzati
+            switchTab('custom');
         }
 
         // Riproduci canale
@@ -1159,8 +1323,8 @@
             
             currentChannel = channel;
             
-            // Aggiungi ai recenti (tranne per canali personalizzati)
-            if (channel.id !== -1) {
+            // Aggiungi ai recenti (tranne per canali temporanei)
+            if (channel.type !== 'temporary') {
                 addToRecent(channel);
             }
             
@@ -1237,6 +1401,15 @@
             }, 15000);
         }
 
+        // Navigazione tab
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            generateChannelGroups();
+        }
+
+        // [RESTANTE CODICE - funzioni di controllo video, fullscreen, preferiti, ecc. rimangono identiche]
         // Controlli video
         function togglePlay() {
             if (videoPlayer.paused) {
@@ -1456,14 +1629,6 @@
             
             recentChannels = recentChannels.slice(0, 10);
             localStorage.setItem('recentChannels', JSON.stringify(recentChannels));
-        }
-
-        // Navigazione tab
-        function switchTab(tab) {
-            currentTab = tab;
-            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            generateChannelGroups();
         }
 
         // Touch events
