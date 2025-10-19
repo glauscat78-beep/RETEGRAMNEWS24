@@ -167,6 +167,19 @@
             height: 220px;
             display: block;
             background: #000;
+            /* Nascondi controlli nativi */
+            &::-webkit-media-controls {
+                display: none !important;
+            }
+        }
+
+        /* Nascondi controlli nativi su tutti i browser */
+        #video-player::-webkit-media-controls {
+            display: none !important;
+        }
+
+        #video-player::-webkit-media-controls-enclosure {
+            display: none !important;
         }
 
         .player-placeholder {
@@ -196,6 +209,7 @@
             padding: 0.75rem;
             opacity: 0;
             transition: opacity 0.3s ease;
+            z-index: 10;
         }
 
         .video-container.touch-active .custom-controls,
@@ -551,6 +565,35 @@
             transform: translateX(-50%) translateY(0);
         }
 
+        /* Fullscreen styles */
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background: #000;
+        }
+
+        .fullscreen .video-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .fullscreen #video-player {
+            height: 100%;
+        }
+
+        .fullscreen .custom-controls {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .mobile-menu-btn {
@@ -672,7 +715,7 @@
     </div>
 
     <!-- Video Player -->
-    <section class="video-section">
+    <section class="video-section" id="video-section">
         <div class="video-container" id="video-container">
             <div class="quality-selector" id="quality-selector">
                 <button class="quality-btn active" onclick="setQuality('auto')">Auto</button>
@@ -687,7 +730,6 @@
             </div>
             <video 
                 id="video-player" 
-                controls
                 playsinline
                 class="hidden"
                 crossorigin="anonymous"
@@ -1006,6 +1048,7 @@
         const playBtn = document.getElementById('play-btn');
         const volumeBtn = document.getElementById('volume-btn');
         const videoContainer = document.getElementById('video-container');
+        const videoSection = document.getElementById('video-section');
         const mobileMenu = document.getElementById('mobile-menu');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
@@ -1022,6 +1065,8 @@
         let touchStartTime = 0;
         let touchStartX = 0;
         let touchStartY = 0;
+        let isFullscreen = false;
+        let touchTimeout;
 
         // Inizializzazione
         function init() {
@@ -1029,6 +1074,16 @@
             setupEventListeners();
             loadUserPreferences();
             setupPWA();
+            
+            // Disabilita controlli nativi
+            disableNativeControls();
+        }
+
+        // Disabilita controlli nativi del video
+        function disableNativeControls() {
+            videoPlayer.removeAttribute('controls');
+            videoPlayer.setAttribute('controlsList', 'nodownload nofullscreen noremoteplayback');
+            videoPlayer.setAttribute('disablepictureinpicture', 'true');
         }
 
         // Setup event listeners
@@ -1043,6 +1098,12 @@
             // Touch events per mobile
             videoContainer.addEventListener('touchstart', handleVideoTouchStart);
             videoContainer.addEventListener('touchend', handleVideoTouchEnd);
+            
+            // Fullscreen events
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
             
             // Tasti rapidi
             document.addEventListener('keydown', handleKeyboardShortcuts);
@@ -1311,23 +1372,48 @@
         }
 
         function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                if (videoPlayer.requestFullscreen) {
-                    videoPlayer.requestFullscreen();
-                } else if (videoPlayer.webkitRequestFullscreen) {
-                    videoPlayer.webkitRequestFullscreen();
-                } else if (videoPlayer.msRequestFullscreen) {
-                    videoPlayer.msRequestFullscreen();
-                }
+            if (!isFullscreen) {
+                enterFullscreen();
+            } else {
+                exitFullscreen();
+            }
+        }
+
+        function enterFullscreen() {
+            if (videoSection.requestFullscreen) {
+                videoSection.requestFullscreen();
+            } else if (videoSection.webkitRequestFullscreen) {
+                videoSection.webkitRequestFullscreen();
+            } else if (videoSection.mozRequestFullScreen) {
+                videoSection.mozRequestFullScreen();
+            } else if (videoSection.msRequestFullscreen) {
+                videoSection.msRequestFullscreen();
+            }
+        }
+
+        function exitFullscreen() {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
+        function handleFullscreenChange() {
+            isFullscreen = !!(document.fullscreenElement || 
+                             document.webkitFullscreenElement || 
+                             document.mozFullScreenElement || 
+                             document.msFullscreenElement);
+            
+            if (isFullscreen) {
+                videoSection.classList.add('fullscreen');
                 showToast('Schermo intero');
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
+                videoSection.classList.remove('fullscreen');
                 showToast('Schermo normale');
             }
         }
@@ -1428,8 +1514,6 @@
                 videoContainer.classList.remove('touch-active');
             }, 3000);
         }
-
-        let touchTimeout;
 
         // Gesture controls
         function handleGestureStart(e) {
